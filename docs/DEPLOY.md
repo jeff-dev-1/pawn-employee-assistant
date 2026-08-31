@@ -149,7 +149,9 @@ PUBLISH_REFS="main start $(git tag -l)"
 
 # 2. scan exactly that set, full history of each ref
 for r in $PUBLISH_REFS; do
-  git grep -lIE '192\.168\.|10\.[0-9]+\.|BEGIN [A-Z ]*PRIVATE KEY|(sk|pk)-[A-Za-z0-9_-]{20,}' \
+  # Match partial references too. A pattern anchored on full dotted quads let "$HOST"
+  # through into a public repository, in prose, in a file nobody thought to re-scan.
+  git grep -lIE '192\.168\.|10\.[0-9]+\.|[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|BEGIN [A-Z ]*PRIVATE KEY|(sk|pk)-[A-Za-z0-9_-]{20,}' \
     "$r" -- ':!package-lock.json' 2>/dev/null
 done
 # no output = clean

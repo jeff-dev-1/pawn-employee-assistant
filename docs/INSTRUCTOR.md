@@ -1,102 +1,113 @@
-# 讲师手册
+# Instructor Runbook
 
-> 这份不是给学员读的，是给**讲师现场操作**用的。
-> Prompt 正文、验收命令、决策卡都在 [`BUILD-FROM-ZERO.md`](./BUILD-FROM-ZERO.md)，
-> 本文件只管**节奏、话术、翻车处理**，两边不重复。
+> This is not for students. It is what you work from **while the room is watching**.
+> The prompt text, the acceptance commands and the decision cards live in
+> [`BUILD-FROM-ZERO.md`](./BUILD-FROM-ZERO.md); this file carries only **pacing, phrasing,
+> and what to do when something goes wrong**. The two do not repeat each other.
 >
-> 编号只有一套：**Prompt 0–11**，对应 tag `prompt-0` … `prompt-11`。
+> One numbering scheme: **Prompts 0–11**, matching tags `prompt-0` … `prompt-11`.
 >
-> **语言**：学员全英文。`BUILD-FROM-ZERO.md`、学员粘进 Claude Code 的 Prompt、
-> 演示数据、UI、代码注释**全部英文**。本文件是唯一的中文文档，是你自己的现场操作手册。
-> 讲课时可以中文讲，但屏幕上出现的一切都必须是英文——学员看的是屏幕。
+> **Language**: everything is English — this file, the manual, the prompts students paste,
+> the demo data, the UI, the code comments. Speak whatever language the room speaks, but
+> everything on the screen is English, because the screen is what they copy.
 
 ---
 
-## 课前 30 分钟（必做）
+## Thirty minutes before class (not optional)
 
 ```bash
-# 1. 干净状态
+# 1. Clean state
 cd ~/Documents/workspace/pawn-employee-assistant
-git status                       # 应为 clean
+git status                       # must be clean
 git checkout main
 
-# 2. 两条云端通道都预检（没有本地模型，断网就没有 Plan B）
-LLM_PROVIDER=portkey npx tsx scripts/check-llm.ts
-LLM_PROVIDER=direct  npx tsx scripts/check-llm.ts
+# 2. Pre-flight both cloud channels. There is no local model, so a dead network has no plan B
+LLM_PROVIDER=portkey npm run check-llm
+LLM_PROVIDER=direct  npm run check-llm
 
-# 3. 确认 Portkey dashboard 能打开——Prompt 5 的高光要当场给学员看
+# 3. Confirm the Portkey dashboard opens - Prompt 5's set piece is shown live from it
 
-# 4. 完整跑一遍
+# 4. Full run
 make demo && sleep 30 && npm run smoke && make down
 
-# 5. Claude Desktop 注册预演（Prompt 4 的高光，必须课前试通）
-#    用 servers/hr 的 stdio 入口，不是 HTTP —— Desktop 的 config 只认 stdio
-#    改完配置要完全退出 Claude Desktop 再启动，否则不重新加载
+# 5. The guardrail still denies, and normal questions still answer
+npm run guardrail                # injection must come back 446
+npm run dev                      # then ask all four demo questions
 
-# 6. 埋雷（Prompt 10 用）
-git checkout prompt-9
-# 把 execute.ts 的 Promise.allSettled 改成 Promise.all
-git commit -am "refactor: simplify concurrent execution"
+# 6. Rehearse the Claude Desktop registration (Prompt 4's set piece)
+#    Use servers/hr's stdio entry, not HTTP - Desktop's config only accepts stdio
+#    Quit Claude Desktop completely and relaunch, or it will not reload the config
+
+# 7. The planted bug for Prompt 10 already exists at tag prompt-10-bug.
+#    Check it out once so you know what the room will see:
+git checkout prompt-10-bug && git checkout main
 ```
 
-**第 5、6 步一定要课前做完。** 现场改 bug 会露馅，学员看到你手动制造问题，
-这一步的教学效果就没了。
+**Steps 5, 6 and 7 have to be done before the room fills up.** Fixing a bug live gives the
+game away: if students watch you create the problem, the step teaches nothing.
 
 ---
 
-## 时间轴（180 分钟）
+## Timeline (180 minutes)
 
-| 时刻 | Prompt | 主题 | 形式 | 现场关键动作 |
+| Time | Prompt | Topic | Mode | The move that matters |
 |---|---|---|---|---|
-| 0:00 | — | 开场：两个 demo 的分工 | 讲 | 对比 Demo 1：那个讲治理，这个讲编排 |
-| 0:05 | 0 | Context Stack | 现场 | **故意让 AI 抢跑一次**，当众打断 |
-| 0:15 | 1 | PRD | 现场 | 当场答"不要"，示范做减法 |
-| 0:25 | 2 | 骨架 | 现场 | 压住想加 LLM 的冲动 |
-| 0:40 | 3 | HR tool + 单测 | 现场 | 让 AI 去读 SDK 类型定义 |
-| 1:00 | 4 | **协议级验收** | 现场 | 贴进 Claude Desktop 当场问一句 |
-| 1:15 | — | 休息 | | |
-| 1:25 | 5 | 模型出口 | 现场 | **切通道 + 给学员看 Portkey dashboard 的空行** |
-| 1:35 | 6 | 规划器 | 现场 | 展示 debug 日志里的原始 plan |
-| 1:55 | 7 | 第二个 Agent + 合成 | 现场 | 三句话连问，看规划器自己拆；再问第四句展示单轮规划的边界 |
-| 2:15 | 8 | SSE | 现场 | |
-| 2:25 | 9 | **学员自建 Agent** | 学员 | 讲师巡场，不许砍时长 |
-| 2:40 | 10 | AI Debug | 现场 | 逼 AI 先解释再动手 |
-| 2:55 | 11 | 收口 | 现场 | 当众看行数是否超 2400(不含注释空行)|
-| 3:00 | | 收尾 | | |
+| 0:00 | — | Opening: what each demo is for | talk | Against Demo 1: that one teaches governance, this one teaches orchestration |
+| 0:05 | 0 | Context Stack | live | **Let the AI run ahead on purpose**, and interrupt it in front of everyone |
+| 0:15 | 1 | PRD | live | Say "no" out loud, and show requirements being narrowed |
+| 0:25 | 2 | Scaffold | live | Hold back the urge to add the LLM |
+| 0:40 | 3 | HR tools + unit tests | live | Send the AI to read the SDK's type definitions |
+| 1:00 | 4 | **Protocol-level acceptance** | live | Paste it into Claude Desktop and ask a question |
+| 1:15 | — | Break | | |
+| 1:25 | 5 | The model exit | live | **Flip the channel, then show them the empty row in the Portkey dashboard** |
+| 1:35 | 6 | The planner | live | Show the raw plan in the debug log |
+| 1:55 | 7 | Second agent + synthesis | live | Three questions back to back, then the fourth for the limit |
+| 2:15 | 8 | SSE | live | |
+| 2:25 | 9 | **Students build an agent** | students | Walk the room. Do not shorten this |
+| 2:40 | 10 | AI debugging | live | Make the model explain before it touches anything |
+| 2:55 | 11 | Ship it | live | Read the line count out loud (2400, comments and blank lines excluded) |
+| 3:00 | | Close | | |
 
 ---
 
-## 五个现场高光（记住这五个，其他都是铺垫）
+## Five set pieces (remember these; everything else is setup)
 
-1. **Prompt 0 的打断**（1 分钟）
-   AI 一开始就写代码，你打断它："你违反了要求：先输出计划。"
-   学员需要看到"AI 抢跑时怎么拉回来"，而不是只看到顺利的演示。
+1. **The interruption in Prompt 0** (1 minute)
+   The AI starts writing code. You cut it off: "You violated the requirement: output a plan
+   first." Students need to see what pulling back a runaway model looks like, not only a
+   demo where everything went smoothly.
 
-2. **Prompt 4 挂进 Claude Desktop**（30 秒）
-   把注册 JSON（**stdio 那份**）贴进你本机的 Claude Desktop，
-   完全退出重启，问 "Who is Dana Reeve's manager?"。
-   学员刚建的东西被一个真实 host 调用了——这一刻的说服力抵半小时讲解。
+2. **Prompt 4 into Claude Desktop** (30 seconds)
+   Paste the registration JSON — **the stdio one** — into your own Claude Desktop, quit and
+   relaunch completely, and ask "Who is Dana Reeve's manager?". The thing they just built is
+   being called by a real host. That moment is worth half an hour of explanation.
 
-3. **Prompt 5 切通道**（30 秒）
-   `LLM_PROVIDER` 从 `portkey` 改成 `direct`，同样的问题、同样的答案、代码一行没改。
-   然后打开 Portkey dashboard：走网关那次带着延迟、token、成本躺在那儿，直连那次**什么都没有**。
-   让全场盯着那个空白看三秒——**你买的不是更好的答案，是能看见、能计价、能限额、能拦截**。
-   这比讲十页"网关的价值"管用。
+3. **Prompt 5, flipping the channel** (30 seconds)
+   Change `LLM_PROVIDER` from `portkey` to `direct`. Same question, same answer, not one line
+   of code changed. Then open the Portkey dashboard: the gateway call is sitting there with
+   latency, tokens and cost attached, and the direct call is **nowhere**. Make the room look
+   at that empty row for three seconds — **you did not buy a better answer, you bought the
+   ability to see it, price it, cap it and block it.** This beats ten slides on gateways.
 
-4. **Prompt 7 三句连问 + 第四句**（3 分钟）
-   单域 → 单域 → 跨域，让学员看到规划器**自己在判断要不要拆**，不是写死的规则。
-   然后问第四句 **"Who else reports to my manager?"**——它会拒答（实测 7 次 7 次拒），
-   因为 `get_team` 需要的 manager 名字只有第一次调用才拿得到，而且没有"列出所有人"的工具
-   可以绕过去。**当众承认这个边界**，它就是附录 A 存在的理由。
+4. **Prompt 7: three questions, then a fourth** (3 minutes)
+   Single domain → single domain → cross-domain, so the room watches the planner **decide for
+   itself** whether to split, with no hard-coded rules. Then ask
+   **"Who else reports to my manager?"** — it refuses (measured: 7 runs, 7 refusals), because
+   `get_team` needs a manager name that only the first call can supply and there is no
+   list-everybody tool to work around it. **Admit the limit out loud**; it is the reason
+   appendix A exists.
 
-   > **不要用 "Which tickets is my manager waiting to approve?" 来演这个边界。**
-   > 实测 7 次里 6 次它答出来了，而且答对了：规划器改成"把所有 awaiting_approval 的工单
-   > 全捞回来"，让写作模型在上下文里做 join。单轮规划不是不能链式，是**用过量抓取替代链式**
-   > ——只要抓回来的量还塞得进上下文就成立，塞不下的那天它是**静默**退化，不是报错。
-   > 这个事实比"它会失败"更值钱，但它不适合当众赌：现场问上面那句拒答稳定的。
+   > **Do not use "Which tickets is my manager waiting to approve?" for this.**
+   > Measured, it was answered — correctly — in 6 runs out of 7: the planner fetches every
+   > `awaiting_approval` ticket and lets the writer do the join in the context window.
+   > Single-shot planning does not fail at chaining, it **substitutes over-fetching for
+   > chaining** — which holds while the fetched set still fits, and degrades **silently** on
+   > the day it does not. That fact is worth more than "it fails", but it is not something to
+   > bet on in front of a room. Ask the one that refuses reliably.
 
-5. **Prompt 9 的 `git diff apps/web` 为空**（10 秒）
-   学员加完第三个 Agent，当众敲这条命令。空输出就是架构的判卷结果。
+5. **`git diff apps/web` is empty in Prompt 9** (10 seconds)
+   The students have just added the third agent. Type the command in front of them. Empty
+   output is the architecture's mark.
 
 ---
 
@@ -125,52 +136,44 @@ commands above.
 
 Run them the morning of the session, not the week before.
 
-## 常见翻车与处理
+---
 
-| 现象 | 处理 |
+## What goes wrong, and what to do
+
+| Symptom | What to do |
 |---|---|
-| AI 抢跑写代码 | 打断，重申"先计划"。**第一次故意让它发生**，后面就不会了 |
-| MCP SDK API 与 AI 记忆不符 | 让它读 `node_modules/@modelcontextprotocol/sdk` 的类型定义 |
-| Portkey 报 401 / 限流 | 一行切 `LLM_PROVIDER=direct`，正好演示第 3 个高光 |
-| 直连也挂了（vendor 侧故障） | 换 `PLANNER_VENDOR` / `WRITER_VENDOR` 到另一家。三家 key 就是为这个准备的 |
-| 会场断网 | **没有 Plan B**。Prompt 0-4 不需要网，照常讲；Prompt 5 之后改用 $HOST 上的部署实例演示，或念 TEST-CASES 里的录屏结果 |
-| 规划器 JSON 不稳 | 换 `PLANNER_VENDOR`。规划器只看 JSON 稳定性，不看文采 |
-| 规划器输出不合 schema | 这是**真实现象不是故障**，展示重试逻辑，讲为什么不兜底到默认 Agent |
-| 边界演示问题答出来了 | "7 次 7 次拒答"是对非确定系统的统计结论，只在某个模型的某一天成立。**每期开课前把 Prompt 7 的第 4 句和 5b 各跑两遍**，不成立就换问题，别在现场发现 |
-| 学员卡在 Prompt 9 | `git checkout prompt-9`，别让任何人卡死 |
-| AI 生成了中文注释或中文错误信息 | 学员的 Prompt 被污染了。检查他是不是用中文补问了一句——CLAUDE.md 里已写死 English only |
-| 整体进度落后 20 分钟 | 按下面的砍单顺序 |
+| The AI runs ahead and writes code | Interrupt, restate "plan first". **Let it happen once on purpose**; it will not happen again |
+| The MCP SDK's API is not what the model remembers | Send it to read the type definitions under `node_modules/@modelcontextprotocol/sdk` |
+| Portkey answers 401 or rate-limits | One line to `LLM_PROVIDER=direct` — which is set piece 3 arriving early |
+| The direct channel is down too (vendor outage) | Switch `PLANNER_VENDOR` / `WRITER_VENDOR` to another vendor. Three keys exist for exactly this |
+| The room has no network | **There is no plan B.** Prompts 0–4 need none, so carry on; from Prompt 5, demo against the standing instance, or read the recorded results out of `TEST-CASES.md` |
+| The planner's JSON is unstable | Change `PLANNER_VENDOR`. The planner is judged on stable JSON, not on prose |
+| The planner's output does not match the schema | This is **normal traffic, not a fault.** Show the retry, and say why it refuses instead of falling back to a default agent |
+| The limit question gets answered | "7 runs, 7 refusals" is a statistical claim about a non-deterministic system, true of one model on one day. **Ask Prompt 7's fourth question and case 5b twice before every cohort**; swap the question if it no longer holds. Do not find out live |
+| A student is stuck on Prompt 9 | `git checkout prompt-9`. Nobody stalls |
+| The AI produces comments or errors in another language | The student's prompt is contaminated. Check whether they asked a follow-up in that language — `CLAUDE.md` already pins English only |
+| Twenty minutes behind | Cut in the order below |
 
 ---
 
-## 砍单顺序（现场必然超时）
+## What to cut, in order (you will run out of time)
 
-1. 加餐 A/B（ToolLoopAgent、Guardrail）→ 口头两句带过
-2. Prompt 8（SSE）→ 展示写好的效果，不现场写。好看，但不改变架构
-3. Prompt 10（AI Debug）→ 缩到 8 分钟，只做"先解释再动手"那一轮对话
-4. **Prompt 9 的学员时间不许砍。** 学员自己写成一个 Agent 的 15 分钟，
-   比讲师演示 45 分钟留下的东西多
+1. **Appendices A and B** (`ToolLoopAgent`, the guardrail) → two sentences, spoken, and move on
+2. **Prompt 8 (SSE)** → show the finished result instead of writing it live. It looks good, but it does not change the architecture
+3. **Prompt 10 (AI debugging)** → compress to 8 minutes, keeping only the "explain before you touch it" exchange
+4. **Never cut the student time in Prompt 9.** The fifteen minutes students spend building an agent themselves leave more behind than forty-five minutes of watching you
 
 ---
 
-## 学员课前准备
+## What students need beforehand
 
-发给学员，让他们**上课前**装好：
+Send this out and have them install it **before** the session:
 
 ```bash
-node -v          # 需要 >= 20.9（Next 16 的下限）
+node -v          # needs >= 20.9 (Next 16's floor)
 git --version
-docker --version # 只有 Prompt 11 的 make demo 需要；没有就用 npm run dev
+docker --version # only for Prompt 11's make demo; npm run dev covers it otherwise
 ```
 
-Claude Code 已登录可用。**API key 现场发**：Prompt 0-4 不需要 key，
-课间休息时发下去，Prompt 5 开始用。
-
-学员准备清单发英文版：
-
-```
-node -v          # needs >= 20.9
-git --version
-# Claude Code signed in
-# You will receive an API key at the break. Prompts 0-4 need no key and no internet.
-```
+Claude Code signed in and working. **Hand out the API key on the day**: Prompts 0–4 need no
+key, so give it out at the break, and it is first used in Prompt 5.

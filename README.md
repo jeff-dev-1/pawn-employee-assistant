@@ -41,7 +41,7 @@ Fell behind? `git checkout prompt-N` rejoins at the end of step N.
 |---|---|
 | [`docs/BUILD-FROM-ZERO.md`](docs/BUILD-FROM-ZERO.md) | Students: Prompts 0–11 with acceptance commands |
 | [`DESIGN.md`](DESIGN.md) | Architecture, technology choices, what was deliberately cut |
-| [`docs/INSTRUCTOR.md`](docs/INSTRUCTOR.md) | Instructor runbook (Chinese) |
+| [`docs/INSTRUCTOR.md`](docs/INSTRUCTOR.md) | Instructor runbook: pacing, set pieces, what to do when it goes wrong |
 | [`docs/DEPLOY.md`](docs/DEPLOY.md) | The standing instance on the lab node |
 | [`docs/REPLAY-FINDINGS.md`](docs/REPLAY-FINDINGS.md) | What rebuilding the project from the manual caught |
 

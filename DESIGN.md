@@ -8,9 +8,10 @@
 > multi-agent routing, tools and resources, capability self-registration.
 > The two demos are fully independent repositories and share no code.
 >
-> **Language**: all student-facing material is English — this document, the build manual,
-> the prompts students paste into Claude Code, the demo data, and the UI.
-> `docs/INSTRUCTOR.md` is the only Chinese document; it is the instructor's own runbook.
+> **Language**: everything in this repository is English — this document, the build manual,
+> the prompts students paste into Claude Code, the demo data, the UI, and the instructor's
+> own runbook. Speak whatever language the room speaks; the screen stays English, because
+> the screen is what students copy.
 
 ---
 
