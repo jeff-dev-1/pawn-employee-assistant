@@ -12,7 +12,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "smoke": "tsx --env-file-if-exists=.env scripts/smoke-mcp.ts",
-    "smoke:stdio": "tsx --env-file-if-exists=.env scripts/smoke-stdio.ts"
+    "smoke:stdio": "tsx --env-file-if-exists=.env scripts/smoke-stdio.ts",
+    "check-llm": "tsx --env-file-if-exists=.env scripts/check-llm.ts"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
