@@ -27,5 +27,5 @@ DeepSeek plans, Kimi writes, both through Portkey. **All eight pass.**
 | The limit does not always refuse | "Which tickets is my manager waiting to approve?" → 7 runs: 1 refusal, 6 over-fetches (`find_employee` + every `awaiting_approval` ticket) that let synthesis do the join. All six answers were correct. Over-fetching substitutes for chaining until the fetched set stops fitting in the context window |
 | Three agents answer their own domain | "What is the remote work policy?" → `policy.search_policy` 16ms → the clause, quoted |
 | Types and units | `npm run typecheck` clean, 28 tests pass |
-| Every prompt-N tag runs standalone | Tags rebuilt from the manual on a clean tree; `prompt-3` and `prompt-6` verified by fresh checkout, `npm install`, and a real question |
+| Every prompt-N tag runs standalone | **All twelve booted from clean checkouts, 76 checks, 76 pass** — each tag runs the acceptance commands its own PROMPT block carries. Reproduce with `bash scripts/verify-tags.sh` |
 | The manual builds the system | Full replay of Prompts 0–11 from `start`; see `docs/REPLAY-FINDINGS.md` |

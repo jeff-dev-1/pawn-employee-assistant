@@ -61,4 +61,6 @@ pasted in order, every acceptance command run — so what a student finishes wit
 what `git clone` gives them, and `git diff prompt-11 main` is a short, readable list of what
 the appendices and the instructor's documents add on top.
 
-Fell behind? `git checkout prompt-N` rejoins at the end of step N.
+Fell behind? `git checkout prompt-N` rejoins at the end of step N. That is checked, not
+assumed: `bash scripts/verify-tags.sh` boots all twelve tags from clean checkouts and
+runs each step's own acceptance commands.
