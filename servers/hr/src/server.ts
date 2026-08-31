@@ -1,5 +1,7 @@
-import { serveHttp } from '@pawn/mcp-kit';
+import { announce, serveHttp } from '@pawn/mcp-kit';
 import { loadConfig } from './config.js';
 import { hrServer } from './definition.js';
 
-serveHttp(hrServer, loadConfig().port);
+const config = loadConfig();
+serveHttp(hrServer, config.port);
+announce(hrServer, config.orchestratorUrl, `http://localhost:${config.port}/mcp`);

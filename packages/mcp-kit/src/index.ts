@@ -51,6 +51,43 @@ export function serveHttp(definition: ServerDefinition, port: number, allowedHos
   });
 }
 
+/**
+ * Announce this server to the orchestrator, then keep announcing. Registration is a
+ * heartbeat, not a one-off: the orchestrator has to be able to tell a live server from one
+ * that stopped, and it can only do that if silence means something.
+ */
+export function announce(
+  definition: ServerDefinition,
+  orchestratorUrl: string,
+  advertiseUrl: string,
+  everyMs = Number(process.env.REGISTER_HEARTBEAT_MS ?? 15_000),
+) {
+  const beat = async () => {
+    try {
+      const response = await fetch(`${orchestratorUrl}/api/agents/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: definition.name,
+          url: advertiseUrl,
+          description: definition.description,
+        }),
+      });
+      // Check the response, not merely that fetch resolved. A server that logs "registered"
+      // after an HTTP 500 has told you a comforting lie.
+      if (!response.ok) {
+        console.warn(`[${definition.name}] register returned ${response.status}`);
+      }
+    } catch {
+      // The orchestrator may simply not be up yet. The next beat will try again.
+    }
+  };
+  void beat();
+  const timer = setInterval(beat, everyMs);
+  timer.unref();
+  return timer;
+}
+
 /** stdio entry, for hosts such as Claude Desktop. The same registration, another transport. */
 export async function serveStdio(definition: ServerDefinition) {
   await build(definition).connect(new StdioServerTransport());
