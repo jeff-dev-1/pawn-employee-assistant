@@ -1,0 +1,16 @@
+name,role,department,email,manager,remaining_leave,total_leave
+Yuki Tanaka,Backend Engineer,Engineering,yuki.tanaka@acme.example,Tomas Berg,22,25
+Omar Haddad,Senior Backend Engineer,Engineering,omar.haddad@acme.example,Tomas Berg,9,25
+Tomas Berg,Engineering Manager,Engineering,tomas.berg@acme.example,Lena Fischer,14,28
+Lena Fischer,VP Engineering,Engineering,lena.fischer@acme.example,,18,30
+Dana Reeve,Frontend Engineer,Engineering,dana.reeve@acme.example,Tomas Berg,25,25
+Grace Okonkwo,IT Support Lead,IT,grace.okonkwo@acme.example,Priya Raman,11,25
+Daniel Ferreira,IT Support Engineer,IT,daniel.ferreira@acme.example,Grace Okonkwo,20,25
+Priya Raman,Head of IT,IT,priya.raman@acme.example,Lena Fischer,7,28
+Ines Delacroix,Data Analyst,Analytics,ines.delacroix@acme.example,Marco Rossi,16,25
+Marco Rossi,Analytics Manager,Analytics,marco.rossi@acme.example,Lena Fischer,12,28
+Sofia Almeida,People Partner,People,sofia.almeida@acme.example,Hannah Weber,21,27
+Hannah Weber,Head of People,People,hannah.weber@acme.example,,5,30
+Nils Andersen,Recruiter,People,nils.andersen@acme.example,Hannah Weber,24,25
+Aisha Karim,Product Manager,Product,aisha.karim@acme.example,Lena Fischer,13,26
+Ravi Chandra,QA Engineer,Engineering,ravi.chandra@acme.example,Tomas Berg,19,25

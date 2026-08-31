@@ -1,0 +1,4 @@
+name,role,department,email,manager,remaining_leave,total_leave
+Ada Probe,Engineer,Engineering,ada.probe@fixture.example,Bo Lead,4,25
+Cy Probe,Engineer,Engineering,cy.probe@fixture.example,Bo Lead,7,25
+Bo Lead,Manager,Engineering,bo.lead@fixture.example,,10,28
