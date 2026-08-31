@@ -1,0 +1,57 @@
+# CLAUDE.md — Engineering Contract
+
+## Identity
+
+An internal employee assistant. Employees ask questions in natural language about HR, IT and
+company policy. A Next.js orchestrator decides which data domains to consult, calls them
+concurrently over MCP, and composes one answer.
+
+## Stack (fixed — do not propose alternatives)
+
+- TypeScript strict, Node >= 20.9
+- Next.js 16 App Router + Tailwind
+- MCP via the official `@modelcontextprotocol/sdk`, Streamable HTTP transport
+  (the SSE transport is deprecated and must not be used)
+- LLM calls via the Vercel AI SDK `openai-compatible` provider
+- npm workspaces. No pnpm, no turbo, no nx.
+- Tests: vitest
+
+## Directory conventions
+
+```
+apps/web/            orchestrator + UI, port 3000
+  lib/llm.ts         the only file allowed to import a model SDK
+  lib/registry.ts    agent registry
+  lib/orchestrator/  plan.ts / execute.ts / synthesize.ts
+servers/<name>/      one MCP server per data domain
+  src/tools/         tool registration; business logic
+  src/server.ts      Streamable HTTP entry
+  src/stdio.ts       stdio entry (Claude Desktop)
+packages/mcp-kit/    shared server skeleton
+data/                fictional demo data
+scripts/             check-llm / smoke-mcp / smoke-all
+```
+
+## Prohibitions
+
+1. No MCP server may call an LLM. Servers provide data and tools; all reasoning happens in
+   the orchestrator.
+2. Only apps/web/lib/llm.ts may call a model. No other file may import a model SDK.
+3. No vector database. The policy corpus is small enough to pass in the context window.
+4. Hard cap of 2400 lines of TypeScript, counting neither comments nor blank lines.
+   When you exceed it, delete before you add. Comments are not the thing being capped:
+   in a teaching repository the explanation is the deliverable, and a rule that makes you
+   delete one comment to add another has been turned against its own purpose.
+
+## Language
+
+Write all documentation, code comments, identifiers, and demo data in English.
+
+## Conventions
+
+- Ports come from environment variables, never hard-coded.
+- A tool that finds nothing returns a structured `not_found`. It does not throw and does not
+  return a natural-language apology.
+- Concurrent tool calls use `Promise.allSettled`. Partial failure is normal, not exceptional.
+- When an SDK API does not typecheck, read the type definitions under `node_modules/`.
+  Do not guess a different call shape.
