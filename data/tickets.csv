@@ -1,0 +1,31 @@
+id,title,status,requester,assignee,approver,created_at
+T-1001,Laptop battery replacement,awaiting_approval,Yuki Tanaka,Daniel Ferreira,Tomas Berg,2026-08-11
+T-1002,VPN client will not connect,in_progress,Omar Haddad,Grace Okonkwo,,2026-08-12
+T-1003,Second monitor request,awaiting_approval,Yuki Tanaka,Daniel Ferreira,Tomas Berg,2026-08-14
+T-1004,Password reset for payroll portal,resolved,Sofia Almeida,Daniel Ferreira,,2026-08-03
+T-1005,Slack workspace access for new hire,resolved,Nils Andersen,Grace Okonkwo,,2026-08-04
+T-1006,Docking station not charging,in_progress,Dana Reeve,Daniel Ferreira,,2026-08-15
+T-1007,Request admin rights on build machine,rejected,Ravi Chandra,Grace Okonkwo,Tomas Berg,2026-08-09
+T-1008,Email quota exceeded,resolved,Marco Rossi,Daniel Ferreira,,2026-08-06
+T-1009,Staging database access,awaiting_approval,Ines Delacroix,Grace Okonkwo,Lena Fischer,2026-08-21
+T-1010,Broken headset,resolved,Aisha Karim,Daniel Ferreira,,2026-08-02
+T-1011,Two-factor device lost,in_progress,Hannah Weber,Grace Okonkwo,,2026-08-18
+T-1012,Printer on floor 3 offline,unassigned,Nils Andersen,,,2026-08-22
+T-1013,Licence for design tool,unassigned,Dana Reeve,,Tomas Berg,2026-08-23
+T-1014,Laptop running hot,in_progress,Yuki Tanaka,Daniel Ferreira,,2026-08-19
+T-1015,Access to analytics dashboard,resolved,Ines Delacroix,Grace Okonkwo,Marco Rossi,2026-08-05
+T-1016,Replace worn keyboard,resolved,Omar Haddad,Daniel Ferreira,,2026-08-07
+T-1017,Guest wifi for interview candidate,resolved,Nils Andersen,Grace Okonkwo,,2026-08-08
+T-1018,Shared drive permissions,in_progress,Sofia Almeida,Grace Okonkwo,Hannah Weber,2026-08-17
+T-1019,Monitor arm request,unassigned,Ravi Chandra,,Tomas Berg,2026-08-24
+T-1020,Mobile phone contract renewal,in_progress,Priya Raman,Daniel Ferreira,,2026-08-13
+T-1021,SSO error on expenses tool,resolved,Aisha Karim,Grace Okonkwo,,2026-08-10
+T-1022,New starter laptop build,in_progress,Sofia Almeida,Daniel Ferreira,,2026-08-20
+T-1023,Backup restore request,resolved,Marco Rossi,Grace Okonkwo,Lena Fischer,2026-08-01
+T-1024,Meeting room display not detected,unassigned,Aisha Karim,,,2026-08-25
+T-1025,Slow build machine,in_progress,Ravi Chandra,Daniel Ferreira,,2026-08-16
+T-1026,Offboarding account closure,resolved,Hannah Weber,Grace Okonkwo,,2026-08-02
+T-1027,External sharing exception,rejected,Ines Delacroix,Grace Okonkwo,Priya Raman,2026-08-11
+T-1028,Standing desk request,unassigned,Omar Haddad,,Tomas Berg,2026-08-26
+T-1029,Test device for mobile QA,in_progress,Ravi Chandra,Daniel Ferreira,Tomas Berg,2026-08-21
+T-1030,Archive old project repository,resolved,Marco Rossi,Grace Okonkwo,,2026-08-04

@@ -8,7 +8,7 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently -n web,hr -c blue,green \"npm run dev -w apps/web\" \"npm run dev -w servers/hr\"",
+    "dev": "concurrently -n web,hr,it -c blue,green,magenta \"npm run dev -w apps/web\" \"npm run dev -w servers/hr\" \"npm run dev -w servers/it\"",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "smoke": "tsx --env-file-if-exists=.env scripts/smoke-mcp.ts",
