@@ -1,15 +1,9 @@
 /**
  * Appendix B. Sends probes through the gateway and reports what the gateway did with them.
  *
- * It uses fetch rather than the AI SDK on purpose. Portkey answers a guardrail verdict in
- * the HTTP STATUS, and the SDK returns text and throws the status away:
- *
- *   200  no guardrail finding
- *   246  a guardrail matched and the configured action allowed the request through
- *   446  a guardrail matched and denied it
- *
- * Run it on `portkey` and on `direct` and read the two side by side. The application code is
- * identical in both runs; that is the entire point.
+ * It uses fetch rather than the AI SDK on purpose: Portkey answers a guardrail verdict in the
+ * HTTP status (200 clean, 246 flagged, 446 denied) and the SDK throws the status away.
+ * Run it on `portkey` and on `direct` and read the two side by side. See docs/BUILD-FROM-ZERO.md.
  */
 import { activeChannel, endpoint } from '../apps/web/lib/llm.js';
 

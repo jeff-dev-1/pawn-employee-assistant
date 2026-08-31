@@ -86,10 +86,17 @@ export async function POST(request: Request) {
           send({ type: 'error', stage: 'synthesize', message: 'The writer model returned no text.' });
         }
       } catch (error) {
+        // Say who refused. 446 is the gateway's guardrail, and the trace id is what turns
+        // "it broke" into a row someone can look up.
+        const api = error as { statusCode?: number; responseHeaders?: Record<string, string> };
+        const denied = api.statusCode === 446;
+        const trace = api.responseHeaders?.['x-portkey-trace-id'];
         send({
           type: 'error',
-          stage: 'orchestrator',
-          message: error instanceof Error ? error.message : String(error),
+          stage: denied ? 'guardrail' : 'orchestrator',
+          message: denied
+            ? `Blocked by the gateway guardrail${trace ? ` · trace ${trace}` : ''}`
+            : error instanceof Error ? error.message : String(error),
         });
       } finally {
         controller.close();

@@ -78,6 +78,10 @@ export async function plan(
       console.log(`[plan] attempt ${attempt}: ${JSON.stringify(output)}`);
       return { ...output, usage: { in: usage.inputTokens ?? 0, out: usage.outputTokens ?? 0 } };
     } catch (error) {
+      // A gateway guardrail refusing the call is not a planning failure. Retrying burns a
+      // round trip, and reporting it as "I cannot answer that" sends the reader hunting for
+      // a missing tool instead of a security control. Let it out.
+      if ((error as { statusCode?: number }).statusCode === 446) throw error;
       const message = error instanceof Error ? error.message : String(error);
       // Log the raw model text. Without it you are guessing at what went wrong.
       const raw = (error as { text?: string })?.text;
