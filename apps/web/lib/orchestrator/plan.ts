@@ -22,7 +22,10 @@ export const PlanSchema = z.object({
   reasoning: z.string().default('').describe('One sentence explaining the selection'),
 });
 
-export type Plan = z.infer<typeof PlanSchema>;
+/** What the plan cost, so the UI can put a number next to stage 1. */
+export type Usage = { in: number; out: number };
+
+export type Plan = z.infer<typeof PlanSchema> & { usage?: Usage };
 
 const EMPTY: Plan = { calls: [], reasoning: 'The planner could not produce a valid plan.' };
 
@@ -73,8 +76,7 @@ export async function plan(
         prompt: prompt(question, catalog, user),
       });
       console.log(`[plan] attempt ${attempt}: ${JSON.stringify(output)}`);
-      console.log(`[cost] plan ${usage.inputTokens ?? 0} in / ${usage.outputTokens ?? 0} out`);
-      return output;
+      return { ...output, usage: { in: usage.inputTokens ?? 0, out: usage.outputTokens ?? 0 } };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       // Log the raw model text. Without it you are guessing at what went wrong.
