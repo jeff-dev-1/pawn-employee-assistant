@@ -4,4 +4,4 @@ import { hrServer } from './definition.js';
 
 const config = loadConfig();
 serveHttp(hrServer, config.port);
-announce(hrServer, config.orchestratorUrl, `http://localhost:${config.port}/mcp`);
+announce(hrServer, config.orchestratorUrl, process.env.ADVERTISE_URL ?? `http://localhost:${config.port}/mcp`);

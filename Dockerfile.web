@@ -1,0 +1,18 @@
+FROM node:22-alpine
+WORKDIR /app
+
+# next build writes a telemetry file into the home directory. In a container that home is
+# not writable and the build dies with a bare `EPERM: operation not permitted, write`,
+# which names neither telemetry nor a path.
+ENV NEXT_TELEMETRY_DISABLED=1
+COPY package.json package-lock.json ./
+COPY apps/web/package.json apps/web/
+COPY packages/mcp-kit/package.json packages/mcp-kit/
+COPY servers/hr/package.json servers/hr/
+COPY servers/it/package.json servers/it/
+COPY servers/policy/package.json servers/policy/
+RUN npm ci
+COPY . .
+RUN npm run build -w apps/web
+EXPOSE 3000
+CMD ["npm", "run", "start", "-w", "apps/web"]

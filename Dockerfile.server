@@ -1,0 +1,15 @@
+FROM node:22-alpine
+ARG AGENT
+ENV AGENT=${AGENT}
+WORKDIR /app
+COPY package.json package-lock.json ./
+COPY apps/web/package.json apps/web/
+COPY packages/mcp-kit/package.json packages/mcp-kit/
+COPY servers/hr/package.json servers/hr/
+COPY servers/it/package.json servers/it/
+COPY servers/policy/package.json servers/policy/
+# Dev dependencies stay in the image on purpose: tsx runs the servers.
+RUN npm ci
+COPY . .
+EXPOSE 3000
+CMD ["sh", "-c", "npx tsx servers/${AGENT}/src/server.ts"]

@@ -4,4 +4,4 @@ import { itServer } from './definition.js';
 
 const config = loadConfig();
 serveHttp(itServer, config.port);
-announce(itServer, config.orchestratorUrl, `http://localhost:${config.port}/mcp`);
+announce(itServer, config.orchestratorUrl, process.env.ADVERTISE_URL ?? `http://localhost:${config.port}/mcp`);

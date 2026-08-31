@@ -4,4 +4,4 @@ import { policyServer } from './definition.js';
 
 const config = loadConfig();
 serveHttp(policyServer, config.port);
-announce(policyServer, config.orchestratorUrl, `http://localhost:${config.port}/mcp`);
+announce(policyServer, config.orchestratorUrl, process.env.ADVERTISE_URL ?? `http://localhost:${config.port}/mcp`);

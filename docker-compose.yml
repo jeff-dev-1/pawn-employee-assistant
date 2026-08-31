@@ -1,0 +1,80 @@
+services:
+  web:
+    build: { context: ., dockerfile: Dockerfile.web }
+    container_name: pawn-web
+    ports: ["${WEB_BIND:-127.0.0.1}:${WEB_PORT:-3000}:3000"]
+    env_file: [.env]
+    environment:
+      WEB_PORT: 3000
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  hr:
+    build: { context: ., dockerfile: Dockerfile.server, args: { AGENT: hr } }
+    container_name: pawn-hr
+    ports: ["127.0.0.1:${HR_PORT:-3101}:3000"]
+    env_file: [.env]
+    environment:
+      HR_PORT: 3000
+      ORCHESTRATOR_URL: http://web:3000
+      ADVERTISE_URL: http://hr:3000/mcp
+      # createMcpExpressApp trusts only a loopback Host header. The orchestrator reaches
+      # this container as "hr", so that name has to be declared or every request is
+      # refused and registration answers 502.
+      ALLOWED_HOSTS: hr,localhost,127.0.0.1
+    depends_on:
+      web: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
+  it:
+    build: { context: ., dockerfile: Dockerfile.server, args: { AGENT: it } }
+    container_name: pawn-it
+    ports: ["127.0.0.1:${IT_PORT:-3102}:3000"]
+    env_file: [.env]
+    environment:
+      IT_PORT: 3000
+      ORCHESTRATOR_URL: http://web:3000
+      ADVERTISE_URL: http://it:3000/mcp
+      # createMcpExpressApp trusts only a loopback Host header. The orchestrator reaches
+      # this container as "it", so that name has to be declared or every request is
+      # refused and registration answers 502.
+      ALLOWED_HOSTS: it,localhost,127.0.0.1
+    depends_on:
+      web: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
+  policy:
+    build: { context: ., dockerfile: Dockerfile.server, args: { AGENT: policy } }
+    container_name: pawn-policy
+    ports: ["127.0.0.1:${POLICY_PORT:-3103}:3000"]
+    env_file: [.env]
+    environment:
+      POLICY_PORT: 3000
+      ORCHESTRATOR_URL: http://web:3000
+      ADVERTISE_URL: http://policy:3000/mcp
+      # createMcpExpressApp trusts only a loopback Host header. The orchestrator reaches
+      # this container as "policy", so that name has to be declared or every request is
+      # refused and registration answers 502.
+      ALLOWED_HOSTS: policy,localhost,127.0.0.1
+    depends_on:
+      web: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s

@@ -26,8 +26,13 @@ function build(definition: ServerDefinition): McpServer {
  * between requests, so there is no session state to leak or to expire.
  */
 export function serveHttp(definition: ServerDefinition, port: number, allowedHosts: string[] = []) {
+  // createMcpExpressApp turns on DNS-rebinding protection and trusts only a loopback Host
+  // header. The moment the orchestrator reaches this server by a container service name
+  // instead of localhost, every request is refused - so declare the legitimate names
+  // rather than switching the protection off.
+  const declared = [...allowedHosts, ...(process.env.ALLOWED_HOSTS ?? '').split(',')].filter(Boolean);
   const app = createMcpExpressApp(
-    allowedHosts.length > 0 ? { host: '0.0.0.0', allowedHosts } : {},
+    declared.length > 0 ? { host: '0.0.0.0', allowedHosts: declared } : {},
   );
   app.use(json());
 

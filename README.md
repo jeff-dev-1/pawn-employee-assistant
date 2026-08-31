@@ -3,72 +3,59 @@
 An internal employee assistant. Ask a question in natural language; the system decides which
 data domains to consult, fetches from them concurrently, and composes one answer.
 
-At this stage one data domain exists: **HR**, served over MCP.
+> "Who is my manager, and what tickets have I opened?"
+> → HR and IT are queried in parallel, and one answer comes back.
 
-## Run it
+Four processes: a Next.js orchestrator plus three MCP servers (HR, IT, Policy). All reasoning
+lives in the orchestrator; the MCP servers are pure capability providers with no LLM inside.
+
+## Two ways to use this repository
+
+### 1. Run it
 
 ```bash
 npm install
-cp .env.example .env
-npm run dev
-curl -s localhost:3000/api/health
-curl -s localhost:3101/health
+cp .env.example .env          # then put your key in it
+npm run dev                   # four processes, or: make demo (needs Docker)
+open http://localhost:3000
 ```
-
-## The HR tools
-
-| Tool | Arguments | Returns |
-|---|---|---|
-| `find_employee` | `name?`, `email?` | the employee record, or `{"status":"not_found"}` |
-| `get_team` | `manager` | the manager's direct reports, or `{"status":"not_found"}` |
 
 ```bash
-npm run smoke          # Streamable HTTP: initialize -> tools/list -> tools/call
-npm run smoke:stdio    # the same handshake over stdio
+curl -s localhost:3000/api/health    # the orchestrator and every registered agent
+npm run smoke                        # initialize -> tools/list -> tools/call, every agent
+make check                           # typecheck + tests
 ```
 
-Sample output:
+Every model call goes to a public endpoint: the Portkey gateway (`LLM_PROVIDER=portkey`) or a
+vendor directly (`LLM_PROVIDER=direct`). There is no locally hosted model.
 
+### 2. Build it from zero yourself
+
+```bash
+git checkout -b my-build start
+open docs/BUILD-FROM-ZERO.md
 ```
-{"name":"Dana Reeve","role":"Frontend Engineer","department":"Engineering",
- "email":"dana.reeve@acme.example","manager":"Tomas Berg","remaining_leave":25,"total_leave":25}
-{"status":"not_found","detail":"No employee matched Nobody Here"}
-```
 
-## Register it with a host
+Fell behind? `git checkout prompt-N` rejoins at the end of step N.
 
-Claude Desktop accepts **stdio servers only**. Pasting an HTTP URL is silently ignored, and
-in the worst case the whole `mcpServers` block is dropped on the next save. Every path below
-is absolute: the host does not inherit this repository as its working directory.
+## Register a server with a host
 
-`claude_desktop_config.json`:
+Claude Desktop accepts **stdio servers only**, and every path must be absolute:
 
 ```json
 {
   "mcpServers": {
-    "pawn-hr": {
-      "command": "npx",
-      "args": ["tsx", "/Users/zoujun/Documents/workspace/pawn-replay/servers/hr/src/stdio.ts"],
-      "env": {
-        "HR_DATA_FILE": "/Users/zoujun/Documents/workspace/pawn-replay/data/employees.csv"
-      }
-    }
+    "pawn-hr": { "command": "npx", "args": ["tsx", "/Users/zoujun/Documents/workspace/pawn-replay/servers/hr/src/stdio.ts"] }
   }
 }
 ```
 
-Restart Claude Desktop **completely** — it only reloads this file on a full restart — then
-ask "Who is Dana Reeve's manager?".
+## Documentation
 
-Cursor (`.cursor/mcp.json`) takes the same shape:
-
-```json
-{
-  "mcpServers": {
-    "pawn-hr": {
-      "command": "npx",
-      "args": ["tsx", "/Users/zoujun/Documents/workspace/pawn-replay/servers/hr/src/stdio.ts"]
-    }
-  }
-}
-```
+| File | For |
+|---|---|
+| `docs/BUILD-FROM-ZERO.md` | Students: Prompts 0–11 with acceptance commands |
+| `DESIGN.md` | Architecture and what was deliberately cut |
+| `docs/PRD.md` | Scope and the A1–A8 criteria |
+| `docs/ACCEPTANCE.md` | A1–A8 status with evidence |
+| `docs/TEST-CASES.md` | Cases the instructor reads aloud |
