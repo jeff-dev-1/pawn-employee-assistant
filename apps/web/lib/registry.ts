@@ -26,6 +26,13 @@ export async function registerAgent(input: {
   return entry;
 }
 
+/** Servers re-announce on a heartbeat; three missed beats means nobody is home. */
+const STALE_AFTER_MS = Number(process.env.REGISTER_HEARTBEAT_MS ?? 15_000) * 3;
+
+export function isFresh(agent: RegisteredAgent): boolean {
+  return Date.now() - agent.registeredAt < STALE_AFTER_MS;
+}
+
 export function listAgents(): RegisteredAgent[] {
   return [...agents.values()];
 }
@@ -34,7 +41,14 @@ export function getAgent(name: string): RegisteredAgent | undefined {
   return agents.get(name);
 }
 
-/** The catalog the planner reads. Tool descriptions carry the domain knowledge. */
+/**
+ * The catalog the planner reads. Tool descriptions carry the domain knowledge.
+ *
+ * Stale agents stay in the catalog on purpose. A server can die between one heartbeat and
+ * the next question, so routing has to survive an unreachable target anyway - and hiding
+ * the agent would replace an honest "I could not reach IT" with a silent omission.
+ * Staleness is reported by /api/health instead, which is where an operator looks.
+ */
 export function toolCatalog(): string {
   return listAgents()
     .map((agent) => {
