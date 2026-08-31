@@ -64,10 +64,29 @@ locally hosted model.
 
 ### 2.1 The one big change from the reference project
 
-In the reference project (`demo-local-ai-hr-it-bot`), **every agent calls the LLM itself**.
-The coordinator calls an LLM to route, each agent calls an LLM to answer its sub-query, and
-the coordinator calls an LLM again to synthesize. One cross-domain question costs
-**4–6 LLM calls**.
+Everything in this section was measured against
+[`PaloAltoNetworks/demo-local-ai-hr-it-bot`](https://github.com/PaloAltoNetworks/demo-local-ai-hr-it-bot)
+by cloning it. **Pin the ref when you quote a number about somebody else's repository** — this
+one moves, and the comparison below stopped being a contrast while nobody was looking:
+
+| Ref | Date | State |
+|---|---|---|
+| `main` = `02ecd06` | 2026-04-03 | What this section describes. Three agent servers, each calling the LLM. |
+| `v.0.1.0` | 2026-07-09 | 129 commits on. Restructured into `agents/` and `chatbot-v2/`. |
+| `feat/ai-elements-ui` = `547613e` | 2026-08-28 | 187 commits on. **See §2.1.1 — it converged on this design.** |
+
+In that reference project, **every agent calls the LLM itself**. `mcp-server/shared/query-processor.js`
+calls `LLMProviderFactory.generateText` and is used by all three agent servers — `hr-mcp-server`,
+`it-mcp-server` and `general-mcp-server`. One cross-domain question costs **4–6 LLM calls**,
+and the range is not vague — it is two optional hops, both of which this demo cuts:
+
+| Step | `mcp-gateway/coordinator.js` | Calls |
+|---|---|---|
+| Route | `analyzeRoutingStrategy` :590 | 1 |
+| Each agent answers its sub-query | `queryAgent` :808, :840 → `query-processor.js` :24 | +2 |
+| Synthesize | `synthesizeMultiAgentResponses` :864 | +1 → **4** |
+| Validate the answer is on topic | `generateWithLLM(validationPrompt)` :1076 | +1 → 5 |
+| Translate, when the language is not English | `translateResponse` :1118 | +1 → **6** |
 
 This demo inverts that: **MCP servers are pure data/tool layers with no LLM inside.**
 All reasoning lives in the orchestrator.
@@ -93,6 +112,28 @@ Three reasons, in order of weight:
 The cost, stated plainly: agents lose their domain-specific system prompts. The compensation
 is to put domain knowledge into MCP tool `description` fields and resources so the planner
 can read it — which is the correct use of MCP anyway, and a teaching point in its own right.
+
+### 2.1.1 The reference project reached the same four conclusions
+
+Do not present §2.1 as "what we did differently" without reading this first. On
+`feat/ai-elements-ui` (`547613e`, 2026-08-28, 187 commits past the `main` measured above),
+the reference project has independently arrived at the same decisions:
+
+| Decision | This demo | Reference at `feat/ai-elements-ui` |
+|---|---|---|
+| MCP servers hold no LLM | 3 servers, 0 model calls | `hr-tools-mcp-server` and `it-tools-mcp-server`, **0 of 10 JS files call a model** |
+| One model exit through a gateway | `lib/llm.ts`, Portkey, OpenAI-compatible | LLM via Portkey, `api.portkey.ai/v1`, OpenAI-compatible |
+| Guardrails configured, not hand-written | appendix B | hand-written Prisma AIRS call sites gone; a gateway guardrail with a trace link and token count |
+| Streamed markdown in the UI | `streamdown` | `streamdown`, `ai`, `@ai-sdk/react`, `lucide-react` |
+
+Two teams, no shared code, four matching conclusions. **That is a better argument for this
+architecture than the contrast in §2.1 ever was**, and it is the honest way to present it:
+this demo is not a correction of that project, it is the same conclusion reached from the
+other end, with the reasoning left visible because the reasoning is the lesson.
+
+What still differs is the shape of the reasoning layer. The reference project keeps one
+`it-triage-agent` that calls a model of its own; this demo puts every model call in the
+orchestrator, which is what makes "which step uses the LLM" answerable in a classroom.
 
 ### 2.2 The orchestrator pipeline
 
@@ -188,7 +229,10 @@ under `node_modules/`, never to guess a different call shape.
 Everything cut is something in the reference project whose engineering weight exceeds its
 teaching value:
 
-- **Nine-language i18n** → English only. i18n is close to a fifth of the reference codebase.
+- **Nine-language i18n** (ar, de, en, es, fr, it, ja, pt, zh) → English only. On `main` the
+  locale files are 1 653 of 15 419 lines, about 11%; on the newer `v.0.1.0` branch they are
+  2 977 of 14 177, about 21%. Earlier drafts of this document said "close to a fifth" without
+  naming a ref, which was true of one branch and not the other.
 - **phase1/2/3 run modes** → one mode.
 - **Dual LLM provider implementations (LiteLLM + standard)** → one provider factory.
 - **Twelve hand-written frontend modules** (the reference `chat-handler.js` is 1109 lines
@@ -254,9 +298,15 @@ that exists explicitly in the code, instead of one hard-coded model name everywh
 ### 4.2 Portkey and Prisma AIRS
 
 Portkey was acquired by Palo Alto Networks in May 2026 and is now the gateway for Prisma AIRS.
-The reference project integrates Prisma AIRS directly — hand-written code calling the API at
-four checkpoints. This demo does the same job with Portkey guardrails configured **at the
-gateway**, with zero change to business code.
+At `main` the reference project integrates Prisma AIRS directly: `mcp-gateway/prisma-airs.js`
+wraps the API, and `coordinator.js` calls it at **two** checkpoints — `analyzePrompt` :1274
+and `analyzePromptAndResponse` :1282. (Earlier drafts of this document said four. Counted, it
+is two.) The point is not the number: those call sites are hand-written into the application,
+so the third one is the one somebody forgets.
+
+By `feat/ai-elements-ui` those hand-written call sites are gone and the same job is done by a
+gateway guardrail. **The reference project made this move too** — which makes appendix B a
+demonstration of where the industry went, not a claim about where it should go.
 
 That contrast — the same governance requirement written into business code versus configured
 at the gateway — is appendix B.

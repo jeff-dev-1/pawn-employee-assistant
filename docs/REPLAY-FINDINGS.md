@@ -2,10 +2,11 @@
 
 On 2026-08-31 the whole project was rebuilt from `docs/BUILD-FROM-ZERO.md` in a clean
 worktree off `start`: every prompt pasted in order, every acceptance command run, nothing
-copied from `main`. Twenty-four places where the prompts and this repository disagreed came out of it —
-eighteen from the rebuild itself, five more from reconciling `main` onto the rebuilt lineage
-and redeploying it to the lab node, and one more from booting all twelve tags from clean
-checkouts. All of
+copied from `main`. Twenty-six places where the prompts and this repository disagreed came out of it — eighteen
+from the rebuild itself, five more from reconciling `main` onto the rebuilt lineage and
+redeploying it to the lab node, one from booting all twelve tags from clean checkouts, and
+two from finally checking the claims this project makes about the project it was designed
+against. All of
 them are fixed in the manual; the ones that were also code defects are fixed in `main`.
 
 Kept because the next person to change a prompt should know what a replay catches, and
@@ -61,3 +62,5 @@ more things the manual asked for and this repository had, or the reverse:
 | 22 | 11 | `next build` inside the web image dies with a bare `EPERM: operation not permitted, write` — no path, no mention of what it was writing. It is the telemetry file, and the container's home directory is not writable. Found by redeploying the migrated tree to the lab node. | `ENV NEXT_TELEMETRY_DISABLED=1` in `Dockerfile.web`, and Prompt 11 now asks for it and says why. |
 | 23 | 11 | With the containers healthy, `/api/health` reported `agents: []` and every server logged `register returned 502`. The prompt does say to declare the service names past DNS-rebinding protection, but the compose file never passed them, so the orchestrator's `Host: hr:3000` was refused. Healthy containers and an empty registry is the worst shape this failure can take. | `ALLOWED_HOSTS` per service in `docker-compose.yml`, in both `prompt-11` and `main`. |
 | 24 | 4, 5 | Booting all twelve tags turned up one failure: at `prompt-5`, `git diff` is dirty the moment you run `npm install`. `servers/hr/src/stdio.ts` is a declared `bin` target, npm chmods every bin target, and the file was committed 644 — so it shows as modified with zero insertions and zero deletions. Prompt 5's whole claim is "flipping the channel changes no code, and `git diff` proves it", and the proof was broken by the install that precedes it. | The three stdio entries are committed executable across the lineage, and Prompt 4 now says to do that and why. |
+| 26 | — | Worse than a stale number: the **premise** was stale. `DESIGN.md` §2.1 is built on "in the reference project, every agent calls the LLM itself", which is true at `main` (April) and false at `feat/ai-elements-ui` (`547613e`, 2026-08-28, 187 commits on). There, `hr-tools-mcp-server` and `it-tools-mcp-server` contain **0 model calls across 10 JS files**, the LLM goes through Portkey, the hand-written Prisma AIRS call sites are gone in favour of a gateway guardrail, and the UI uses `streamdown`. Presenting §2.1 as "what we did differently" in front of a room where somebody opens the repository would not survive the first minute. | New §2.1.1: two teams, no shared code, four matching conclusions — stated as convergence, which is a stronger argument than the contrast was. |
+| 25 | — | `DESIGN.md` §2.1 justifies this project's central architectural decision — no LLM inside an MCP server — entirely with numbers about **somebody else's public repository**, and not one of them had been checked. Cloning it: "every agent calls the LLM" and "4–6 calls per cross-domain query" hold exactly, `chat-handler.js` is 1 109 lines to the line, there are 12 frontend modules and 9 locales. But "Prisma AIRS at four checkpoints" is **two**, and "i18n is close to a fifth" is 11% on the branch the other numbers came from and 21% on a newer one. Worse, the document named no ref at all, while that project had moved 129 commits and restructured. | Numbers pinned to `main` = `02ecd06`, the call chain given with file and line so it can be recounted, and both errors corrected in place. |
