@@ -126,6 +126,57 @@ That last one is only visible because registration checks `response.ok`. A serve
 "registered" on any completed fetch would have looked perfectly healthy while being
 unreachable.
 
+## Publishing the repository
+
+Before pushing this repository anywhere public, scan it for anything that should not leave
+the building. The rule that matters is not *what* you grep for — it is **what you grep over**.
+
+**The scan scope must equal the publish set exactly. Not more, not less.**
+
+Both mistakes were made while preparing this repository, hours apart:
+
+| Mistake | Effect |
+|---|---|
+| Scanned `git log --all` / `git rev-list --all` | Counted branches that were never going to be pushed. Produced two false alarms — a "third-party email" and "166 internal addresses" — both in local backup branches. |
+| Scanning only `main` | Would have missed the tags entirely. The tags are what students clone. |
+
+Too wide manufactures noise, and noise trains you to skim. Too narrow clears something that
+was never looked at. The second one is how secrets ship.
+
+```bash
+# 1. name the publish set once, and derive it - do not type it twice
+PUBLISH_REFS="main start $(git tag -l)"
+
+# 2. scan exactly that set, full history of each ref
+for r in $PUBLISH_REFS; do
+  git grep -lIE '192\.168\.|10\.[0-9]+\.|BEGIN [A-Z ]*PRIVATE KEY|(sk|pk)-[A-Za-z0-9_-]{20,}' \
+    "$r" -- ':!package-lock.json' 2>/dev/null
+done
+# no output = clean
+
+# 3. confirm .env never entered any ref
+git log $PUBLISH_REFS --diff-filter=A --name-only --format= | sort -u | grep -E '^\.env$'
+
+# 4. after pushing, prove the remote holds that set and nothing else
+diff <(echo $PUBLISH_REFS | tr ' ' '\n' | sort) \
+     <(git ls-remote --heads --tags origin | awk '{print $2}' \
+       | sed 's|refs/heads/||;s|refs/tags/||' | sort)
+```
+
+Step 4 is the one people skip. It is what catches a stray `git push --all`, a branch pushed
+by an editor's UI, or a ref that was cleaned locally after it had already been published.
+
+Two things this scan cannot tell you, so decide them yourself:
+
+- **Commit author emails are published with every commit** and cannot be removed without
+  rewriting all of history, which invalidates every ref and every tag. If any address in
+  `git log --format='%ae' $PUBLISH_REFS | sort -u` belongs to somebody else, the cheap moment
+  to deal with it is before the first push, not after.
+- **Deleting a local branch does not delete its objects**, but it does remove them from the
+  publish set: `git push --all` and `--mirror` push refs, and an unreachable object has none.
+  Deleting the branch is what closes the risk; `git gc --prune=now` only reclaims disk, and it
+  destroys the last rollback path, so leave it until the material is delivered.
+
 ## Why ADVERTISE_URL exists
 
 Each MCP server tells the orchestrator where to reach it. Inside a container `localhost` is
