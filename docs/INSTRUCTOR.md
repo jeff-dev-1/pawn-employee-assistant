@@ -41,7 +41,15 @@ npm run dev                      # then ask all four demo questions
 # 7. The planted bug for Prompt 10 already exists at tag prompt-10-bug.
 #    Check it out once so you know what the room will see:
 git checkout prompt-10-bug && git checkout main
+
+# 8. Read this file end to end, out loud
 ```
+
+**Step 8 is not ceremony.** Twice now, something wrong in this repository was caught by
+being forced to read a file line by line — once while translating it, once while rehearsing
+it — and neither time by a grep written specifically to catch it. A scanner finds what you
+told it to look for. Reading finds what you did not know to look for, and it is the only
+technique here with that property.
 
 **Steps 5, 6 and 7 have to be done before the room fills up.** Fixing a bug live gives the
 game away: if students watch you create the problem, the step teaches nothing.

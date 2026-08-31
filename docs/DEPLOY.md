@@ -149,9 +149,7 @@ PUBLISH_REFS="main start $(git tag -l)"
 
 # 2. scan exactly that set, full history of each ref
 for r in $PUBLISH_REFS; do
-  # Match partial references too. A pattern anchored on full dotted quads let "$HOST"
-  # through into a public repository, in prose, in a file nobody thought to re-scan.
-  git grep -lIE '192\.168\.|10\.[0-9]+\.|[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|BEGIN [A-Z ]*PRIVATE KEY|(sk|pk)-[A-Za-z0-9_-]{20,}' \
+  git grep -lIE '\b(192\.168|10|172\.(1[6-9]|2[0-9]|3[01]))\.[0-9]{1,3}\.[0-9]{1,3}\b|BEGIN [A-Z ]*PRIVATE KEY|(sk|pk)-[A-Za-z0-9_-]{20,}' \
     "$r" -- ':!package-lock.json' 2>/dev/null
 done
 # no output = clean
@@ -164,6 +162,20 @@ diff <(echo $PUBLISH_REFS | tr ' ' '\n' | sort) \
      <(git ls-remote --heads --tags origin | awk '{print $2}' \
        | sed 's|refs/heads/||;s|refs/tags/||' | sort)
 ```
+
+**What this pattern cannot do, and do not try to make it.** A prose reference carrying only
+part of an address — the last two octets of a lab host, dropped into a sentence — went into
+this repository and survived a scan written to prevent exactly that. The obvious fix is to
+widen the pattern to three octets. Do not: `1.30.0` and `16.3.3` match it, so does every
+version string in the tree, and the scan lights up on a hundred and fifty files. **A scanner
+that is always red is the same as no scanner**, and the second failure is worse than the
+first because it looks like diligence.
+
+A regular expression can catch the mechanical cases: whole private addresses, key shapes,
+`.env` entering a ref. It cannot catch a fragment in a sentence, because a fragment in a
+sentence is indistinguishable from a version number. That case is caught by **reading the
+file**, which is why `docs/INSTRUCTOR.md`'s pre-class checklist ends with reading the runbook
+end to end, and why this one was found while translating rather than while scanning.
 
 Step 4 is the one people skip. It is what catches a stray `git push --all`, a branch pushed
 by an editor's UI, or a ref that was cleaned locally after it had already been published.
