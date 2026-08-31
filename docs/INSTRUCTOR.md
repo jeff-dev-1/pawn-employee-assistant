@@ -61,7 +61,7 @@ git commit -am "refactor: simplify concurrent execution"
 | 2:15 | 8 | SSE | 现场 | |
 | 2:25 | 9 | **学员自建 Agent** | 学员 | 讲师巡场，不许砍时长 |
 | 2:40 | 10 | AI Debug | 现场 | 逼 AI 先解释再动手 |
-| 2:55 | 11 | 收口 | 现场 | 当众看行数是否超 2000 |
+| 2:55 | 11 | 收口 | 现场 | 当众看行数是否超 2400(不含注释空行)|
 | 3:00 | | 收尾 | | |
 
 ---
@@ -99,6 +99,31 @@ git commit -am "refactor: simplify concurrent execution"
    学员加完第三个 Agent，当众敲这条命令。空输出就是架构的判卷结果。
 
 ---
+
+## Assertions that expire
+
+Four of the things this course demonstrates are not properties of this code. They are
+observations about systems outside this repository, made on one day, and they can stop being
+true without anything here changing.
+
+| Assertion | What it actually depends on | Re-check |
+|---|---|---|
+| "Who else reports to my manager?" refuses — 7 runs, 7 refusals | one model version's planning behaviour | ask it twice |
+| "Which tickets is my manager waiting to approve?" is answered 6 times in 7 | the same | ask it twice |
+| The injection probe returns **446** | the AIRS profile, the guardrail, the config, and the key behind them | `npm run guardrail` |
+| The four demo questions do not trip the guardrail | that profile's sensitivity to employee records | `npm run dev`, ask all four |
+
+`scripts/verify-tags.sh` cannot cover any of these. It checks that this code still does what
+this code did; these are claims about somebody else's system, and no test in this repository
+can hold them.
+
+The failure mode is specific, and it is not a crash. **The demo does not break — it
+contradicts you.** You tell the room the planner refuses this question and it answers
+confidently. You tell them the gateway blocks this and a cheerful reply comes back.
+Recovering from that live costs far more than the four minutes it takes to run the four
+commands above.
+
+Run them the morning of the session, not the week before.
 
 ## 常见翻车与处理
 

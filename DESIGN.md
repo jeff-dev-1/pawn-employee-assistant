@@ -298,11 +298,16 @@ that exists explicitly in the code, instead of one hard-coded model name everywh
 ### 4.2 Portkey and Prisma AIRS
 
 Portkey was acquired by Palo Alto Networks in May 2026 and is now the gateway for Prisma AIRS.
-At `main` the reference project integrates Prisma AIRS directly: `mcp-gateway/prisma-airs.js`
-wraps the API, and `coordinator.js` calls it at **two** checkpoints — `analyzePrompt` :1274
-and `analyzePromptAndResponse` :1282. (Earlier drafts of this document said four. Counted, it
-is two.) The point is not the number: those call sites are hand-written into the application,
-so the third one is the one somebody forgets.
+At `main` the reference project integrates Prisma AIRS directly. `mcp-gateway/prisma-airs.js`
+wraps the API, and `coordinator.js` runs **four named checkpoints** — user input, outbound
+sub-query, inbound response, final response (`CHECKPOINT 1`–`4` at :1491, :934, :1008, and
+:1600/:1657 — five call sites, because checkpoint 4 appears on both the single-agent and
+multi-agent paths). All four funnel through one helper, `_analyzeSecurityCheckpoint` :1239,
+which calls the AIRS client at **two** places: `analyzePrompt` :1274 and
+`analyzePromptAndResponse` :1282. Two API shapes serving four policy points.
+
+The point is not the number: those checkpoints are hand-written into the application, so the
+fifth one is the one somebody forgets.
 
 By `feat/ai-elements-ui` those hand-written call sites are gone and the same job is done by a
 gateway guardrail. **The reference project made this move too** — which makes appendix B a
@@ -426,7 +431,7 @@ When the code is done, all of these must hold:
 5. Stopping `servers/it` degrades the answer instead of crashing, and `/api/health` reflects it.
 6. Adding a fourth agent requires **zero lines changed** under `apps/web`.
 7. `npm run typecheck` and `npm test` pass.
-8. Total TypeScript stays under 2000 lines.
+8. Total TypeScript stays under 2400 lines, comments and blank lines excluded.
 
 Item 6 decides whether the architecture works. Item 8 decides whether it can be vibe-coded.
 

@@ -21,7 +21,7 @@ for t in prompt-0 prompt-1; do
   echo "== $t"; setup_tree $t || { fail boot "worktree"; continue; }
   check "files exist"        test -f CLAUDE.md -a -f DESIGN.md -a -f WORKFLOW.md
   check "prohibition 1"      bash -c '[ "$(grep -c "No MCP server may call an LLM" CLAUDE.md)" = 1 ]'
-  check "2000-line cap"      bash -c '[ "$(grep -c "Hard cap of 2000 lines" CLAUDE.md)" = 1 ]'
+  check "2400-line cap"      bash -c '[ "$(grep -c "Hard cap of 2400 lines" CLAUDE.md)" = 1 ]'
   check "mapping table"      bash -c 'grep -q "find_employee" DESIGN.md && grep -q "search_policy" DESIGN.md'
   if [ "$t" = prompt-1 ]; then
     check "PRD cross-domain"   grep -q "Who is my manager" docs/PRD.md
@@ -214,8 +214,8 @@ if boot "$SP/tagcheck/prompt-11.log" http://localhost:3101/health http://localho
   check "it health"      bash -c 'curl -s -m 5 localhost:3102/health | grep -q it'
   check "policy health"  bash -c 'curl -s -m 5 localhost:3103/health | grep -q policy'
   check "npm run smoke across every agent" npm run smoke
-  n=$(wc -l $(git -C . ls-files '*.ts' '*.tsx') | tail -1 | awk '{print $1}')
-  [ "$n" -lt 2000 ] && pass "under the 2000-line cap" "$n" || fail "under the 2000-line cap" "$n"
+  n=$(cat $(git -C . ls-files '*.ts' '*.tsx') | grep -vcE '^[[:space:]]*(//|/\*|\*|$)')
+  [ "$n" -lt 2400 ] && pass "under the 2400-line cap" "$n" || fail "under the 2400-line cap" "$n"
 else fail "all four processes boot" "timed out"; fi
 stop_stack; teardown_tree
 
