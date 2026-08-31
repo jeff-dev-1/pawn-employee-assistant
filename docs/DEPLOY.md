@@ -1,0 +1,134 @@
+# Deploying a Standing Instance
+
+The demo runs on a laptop with `npm run dev`. A **standing instance** — one host, always up,
+used as the instructor's fallback when a student's machine cannot reach a model vendor — runs
+in containers instead. This document is what that costs and what only breaks there.
+
+Substitute your own host for `$HOST` throughout. Nothing here is specific to one machine.
+
+## Why containers
+
+A host old enough to be in a lab is usually running a Node too old for Next 16, which needs
+>= 20.9. `docker compose` supplies Node 22 and leaves the host toolchain alone.
+
+If the host is shared, keep the blast radius named: this stack owns one directory and the
+containers called `pawn-*`, and nothing else.
+
+## Deploy
+
+From a laptop with the repository checked out:
+
+```bash
+ssh root@$HOST 'mkdir -p /data/pawn-employee-assistant'
+git archive main | ssh root@$HOST 'tar -x -C /data/pawn-employee-assistant'
+ssh root@$HOST 'cd /data/pawn-employee-assistant && cp -n .env.example .env && docker compose up -d --build'
+```
+
+`git archive` sends the tracked tree only — no `node_modules`, no `.git`, about 700 KB.
+
+## Fill in the key
+
+The instance starts and self-registers without a key, but every question fails at the planning
+stage until one is present:
+
+```bash
+ssh root@$HOST
+vi /data/pawn-employee-assistant/.env     # PORTKEY_API_KEY, or LLM_PROVIDER=direct + a vendor key
+cd /data/pawn-employee-assistant && docker compose up -d
+```
+
+Keys live only in that file. They are never committed and never passed on a command line.
+
+## Verify
+
+```bash
+ssh root@$HOST '
+  cd /data/pawn-employee-assistant
+  docker compose ps                   # four services, all healthy
+  curl -s localhost:3000/api/health   # three agents registered, all live
+  curl -s localhost:3101/health
+  curl -s localhost:3102/health
+  curl -s localhost:3103/health
+  curl -sN -X POST localhost:3000/api/chat -H "Content-Type: application/json" \
+    -d "{\"question\":\"Who is my manager, and what tickets have I opened?\"}" | head -3'
+```
+
+**`npm run smoke` does not work against a compose instance, and that is not a bug.** The
+registry holds the URLs the servers advertise, which inside compose are container service
+names (`http://hr:3000/mcp`). The host cannot resolve those, and the web image deliberately
+does not ship `scripts/`. Smoke is for the local `npm run dev` stack; here, the health
+endpoints plus one real question are the acceptance.
+
+## Cost
+
+The four containers carry `restart: unless-stopped` and call a paid vendor on every question.
+There is no usage alarm. When the instance is not needed:
+
+```bash
+ssh root@$HOST 'cd /data/pawn-employee-assistant && docker compose down'
+```
+
+## Reaching it from a laptop
+
+A standing instance is often reachable on the lab network and not over a corporate VPN, where
+a narrow filter may permit TCP 22 and nothing else. Before blaming the deployment, check both
+ends — the failure looks identical from the browser either way:
+
+```bash
+# on the host - all of these should pass
+docker port pawn-web                                  # 3000/tcp -> 0.0.0.0:3000
+ss -lntp | grep :3000                                 # docker-proxy on *:3000
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3000/api/health   # 200
+systemctl is-active firewalld                         # inactive
+iptables -L INPUT -n | head -3                        # policy ACCEPT, no rules
+
+# from the laptop - if only 22 answers, the filter is upstream
+for p in 22 3000; do nc -z -G 4 "$HOST" $p && echo "$p open" || echo "$p blocked"; done
+```
+
+Host wide open, laptop blocked on every port but 22 → the filter is on the network path, not
+in the deployment. **Use an SSH tunnel.** No firewall change on a shared node, nothing exposed
+to anyone else:
+
+```bash
+ssh -N -L 3300:localhost:3000 root@$HOST
+open http://localhost:3300
+```
+
+Port 3300 rather than 3000 because a local `npm run dev` already owns 3000.
+
+Reachability is a property of one network path, not of the demo. Students build and run the
+stack on their own machine and open `localhost:3000`; nothing in the training depends on a
+standing instance.
+
+## Four things that only break in a container
+
+**`next dev` dies with `EPERM: operation not permitted, write`.** Its interactive dev UI
+writes to a TTY, and compose gives it none. A standing instance runs `next build` at image
+time and `next start` at runtime, which is the right choice anyway: faster, smaller, less
+memory. Local development still uses `next dev`.
+
+**`next build` dies with the same bare `EPERM`.** Different cause, no path in the message: it
+is the telemetry file, and the container's home directory is not writable. `Dockerfile.web`
+sets `NEXT_TELEMETRY_DISABLED=1`.
+
+**BusyBox `wget` resolves `localhost` to `::1` and fails with `Invalid argument`.** Health
+probes pin `127.0.0.1` and use separate flags (`-q -O /dev/null`), not the combined `-qO-`.
+
+**The MCP SDK rejects the orchestrator's Host header.** `createMcpExpressApp()` turns on
+DNS-rebinding protection by default and only trusts a loopback Host. Behind compose the
+orchestrator dials `http://hr:3000/mcp`, so the Host header is `hr:3000` and every request is
+refused — registration returns HTTP 502 **while all four containers report healthy**. The fix
+keeps the protection and declares the legitimate names through `ALLOWED_HOSTS`, rather than
+switching it off. See `packages/mcp-kit/src/index.ts` and `docker-compose.yml`.
+
+That last one is only visible because registration checks `response.ok`. A server that logged
+"registered" on any completed fetch would have looked perfectly healthy while being
+unreachable.
+
+## Why ADVERTISE_URL exists
+
+Each MCP server tells the orchestrator where to reach it. Inside a container `localhost` is
+that container, so the advertised address must come from configuration:
+`ADVERTISE_URL=http://hr:3000/mcp` names the compose service. Without it the orchestrator
+registers an address it can never dial, and the failure looks like a working registration.

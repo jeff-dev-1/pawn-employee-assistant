@@ -12,6 +12,7 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "smoke": "tsx --env-file-if-exists=.env scripts/smoke-all.ts",
+    "guardrail": "tsx --env-file-if-exists=.env scripts/check-guardrail.ts",
     "smoke:stdio": "tsx --env-file-if-exists=.env scripts/smoke-stdio.ts",
     "check-llm": "tsx --env-file-if-exists=.env scripts/check-llm.ts",
     "smoke:hr": "tsx --env-file-if-exists=.env scripts/smoke-mcp.ts"

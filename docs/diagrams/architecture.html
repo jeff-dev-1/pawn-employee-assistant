@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PAWN Employee Assistant Architecture</title>
+<style>
+  html, body { margin: 0; min-height: 100%; background: #F7F5F0; color: #25272D; }
+  body { display: grid; place-items: center; padding: 24px; box-sizing: border-box; }
+  svg { width: min(100%, 1440px); height: auto; display: block; }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1064 816" width="1064" height="816" role="img" aria-labelledby="diagram-title diagram-desc">
+<title id="diagram-title">PAWN Employee Assistant Architecture</title>
+<desc id="diagram-desc">Reasoning stays in the orchestrator · MCP servers only provide capability · two model calls per cross-domain query</desc>
+<defs>
+  <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse" overflow="visible"><path d="M0 0 L9 4 L0 8 Z" fill="#596273"/></marker>
+  <marker id="arrow-accent" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse" overflow="visible"><path d="M0 0 L9 4 L0 8 Z" fill="#B5523A"/></marker>
+  <marker id="arrow-link" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse" overflow="visible"><path d="M0 0 L9 4 L0 8 Z" fill="#315F91"/></marker>
+  <marker id="arrow-soft" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse" overflow="visible"><path d="M0 0 L9 4 L0 8 Z" fill="#7E8795"/></marker>
+</defs>
+<rect width="1064" height="816" fill="#F7F5F0"/>
+<text x="48" y="52" fill="#25272D" font-family="Georgia, &#x27;Times New Roman&#x27;, serif" font-size="28">PAWN Employee Assistant Architecture</text>
+<text x="48" y="80" fill="#596273" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12">Reasoning stays in the orchestrator · MCP servers only provide capability · two model calls per cross-domain query</text>
+<rect data-zone-id="web-tier" x="432" y="124" width="200" height="304" rx="8" fill="#EEEAE2" fill-opacity="0.42" stroke="#D7D2C8" stroke-width="1" stroke-dasharray="4 4"/>
+<rect x="444" y="118" width="268" height="16" rx="2" fill="#F7F5F0"/>
+<text x="452" y="129" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.1em">APPS/WEB · SINGLE NEXT.JS 16 PROCESS</text>
+<rect data-zone-id="mcp-tier" x="36" y="464" width="728" height="128" rx="8" fill="#EEEAE2" fill-opacity="0.42" stroke="#D7D2C8" stroke-width="1" stroke-dasharray="4 4"/>
+<rect x="48" y="458" width="359" height="16" rx="2" fill="#F7F5F0"/>
+<text x="56" y="469" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.1em">SERVERS/ · SEPARATE PROCESSES · DATA ONLY, NO LLM</text>
+<path id="edge-e1" data-edge-id="e1" d="M 532 240 L 532 328" fill="none" stroke="#315F91" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-link)"/>
+<path id="edge-e2" data-edge-id="e2" d="M 452 368 L 304 368 Q 296 368 296 376 L 296 468 Q 296 476 288 476 L 144 476 Q 136 476 136 484 L 136 500" fill="none" stroke="#315F91" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-link)"/>
+<path id="edge-e3" data-edge-id="e3" d="M 504 408 L 504 448 Q 504 456 496 456 L 408 456 Q 400 456 400 464 L 400 500" fill="none" stroke="#315F91" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-link)"/>
+<path id="edge-e4" data-edge-id="e4" d="M 560 408 L 560 448 Q 560 456 568 456 L 656 456 Q 664 456 664 464 L 664 500" fill="none" stroke="#315F91" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-link)"/>
+<path id="edge-e5" data-edge-id="e5" d="M 612 368 L 760 368 Q 768 368 768 376 L 768 464 Q 768 472 776 472 L 920 472 Q 928 472 928 480 L 928 496" fill="none" stroke="#B5523A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-accent)"/>
+<rect data-label-for="e1" x="544" y="276" width="72" height="16" rx="2" fill="#F7F5F0"/>
+<text x="580" y="287" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" text-anchor="middle" letter-spacing="0.05em">ASK / SSE</text>
+<rect data-label-for="e3" x="420" y="428" width="64" height="16" rx="2" fill="#F7F5F0"/>
+<text x="452" y="439" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" text-anchor="middle" letter-spacing="0.05em">MCP HTTP</text>
+<rect data-label-for="e4" x="580" y="428" width="64" height="16" rx="2" fill="#F7F5F0"/>
+<text x="612" y="439" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" text-anchor="middle" letter-spacing="0.05em">MCP HTTP</text>
+<rect data-label-for="e5" x="788" y="444" width="120" height="16" rx="2" fill="#F7F5F0"/>
+<text x="848" y="455" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" text-anchor="middle" letter-spacing="0.05em">PLAN + SYNTHESIZE</text>
+<g id="node-browser" data-node-id="browser">
+<rect x="452" y="160" width="160" height="80" rx="6" fill="#F7F5F0"/>
+<rect x="452" y="160" width="160" height="80" rx="6" fill="#F7F5F0" stroke="#7E8795" stroke-width="1"/>
+<text x="464" y="178" fill="#7E8795" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">USER</text>
+<text data-node-label="browser" x="532" y="200" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Employee Browser</text>
+<text data-node-sublabel="browser" x="532" y="216" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">React · all three stages</text>
+<text data-node-sublabel="browser" x="532" y="228" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">visible</text>
+</g>
+<g id="node-coordinator" data-node-id="coordinator">
+<rect x="452" y="328" width="160" height="80" rx="6" fill="#F7F5F0"/>
+<rect x="452" y="328" width="160" height="80" rx="6" fill="#F4E7E1" stroke="#B5523A" stroke-width="1"/>
+<text x="464" y="346" fill="#B5523A" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">GATEWAY</text>
+<text data-node-label="coordinator" x="532" y="368" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Orchestrator :3000</text>
+<text data-node-sublabel="coordinator" x="532" y="384" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">plan → execute →</text>
+<text data-node-sublabel="coordinator" x="532" y="396" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">synthesize</text>
+</g>
+<g id="node-hr-server" data-node-id="hr-server">
+<rect x="56" y="500" width="160" height="72" rx="6" fill="#F7F5F0"/>
+<rect x="56" y="500" width="160" height="72" rx="6" fill="#F7F5F0" stroke="#25272D" stroke-width="1"/>
+<text x="68" y="518" fill="#25272D" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">AGENT</text>
+<text data-node-label="hr-server" x="136" y="542" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">HR Server :3101</text>
+<text data-node-sublabel="hr-server" x="136" y="558" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">employees.csv</text>
+</g>
+<g id="node-it-server" data-node-id="it-server">
+<rect x="320" y="500" width="160" height="72" rx="6" fill="#F7F5F0"/>
+<rect x="320" y="500" width="160" height="72" rx="6" fill="#F7F5F0" stroke="#25272D" stroke-width="1"/>
+<text x="332" y="518" fill="#25272D" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">AGENT</text>
+<text data-node-label="it-server" x="400" y="542" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">IT Server :3102</text>
+<text data-node-sublabel="it-server" x="400" y="558" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">tickets.sqlite</text>
+</g>
+<g id="node-policy-server" data-node-id="policy-server">
+<rect x="584" y="500" width="160" height="72" rx="6" fill="#F7F5F0"/>
+<rect x="584" y="500" width="160" height="72" rx="6" fill="#F7F5F0" stroke="#25272D" stroke-width="1"/>
+<text x="596" y="518" fill="#25272D" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">AGENT</text>
+<text data-node-label="policy-server" x="664" y="542" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Policy Server :3103</text>
+<text data-node-sublabel="policy-server" x="664" y="558" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">policies/*.md</text>
+</g>
+<g id="node-llm-gate" data-node-id="llm-gate">
+<rect x="848" y="496" width="160" height="80" rx="6" fill="#F7F5F0"/>
+<rect x="848" y="496" width="160" height="80" rx="6" fill="#F4E7E1" stroke="#B5523A" stroke-width="1"/>
+<text x="860" y="514" fill="#B5523A" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">SERVICE</text>
+<text data-node-label="llm-gate" x="928" y="536" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">lib/llm.ts</text>
+<text data-node-sublabel="llm-gate" x="928" y="552" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">the only model exit ·</text>
+<text data-node-sublabel="llm-gate" x="928" y="564" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">gateway or direct</text>
+</g>
+<g id="annotation-a1" data-annotation-id="a1">
+<rect x="48" y="620" width="476" height="76" rx="4" fill="#EEEAE2" stroke="#D7D2C8"/>
+<path d="M 48 620 V 696" stroke="#B5523A" stroke-width="3"/>
+<text x="60" y="636" fill="#B5523A" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">CONSTRAINT · it-server</text>
+<text x="60" y="656" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9">No LLM inside an MCP server. One cross-domain query costs exactly two model calls.</text>
+</g>
+<g id="annotation-a2" data-annotation-id="a2">
+<rect x="540" y="620" width="476" height="76" rx="4" fill="#EEEAE2" stroke="#D7D2C8"/>
+<path d="M 540 620 V 696" stroke="#B5523A" stroke-width="3"/>
+<text x="552" y="636" fill="#B5523A" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">NOTE · llm-gate</text>
+<text x="552" y="656" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9">LLM_PROVIDER switches gateway and direct in one line, with zero code change. Every</text>
+<text x="552" y="668" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9">call is public cloud.</text>
+</g>
+<g id="annotation-a3" data-annotation-id="a3">
+<rect x="48" y="708" width="476" height="76" rx="4" fill="#EEEAE2" stroke="#D7D2C8"/>
+<path d="M 48 708 V 784" stroke="#B5523A" stroke-width="3"/>
+<text x="60" y="724" fill="#B5523A" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">NOTE · policy-server</text>
+<text x="60" y="744" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9">A new agent self-registers its capabilities; the orchestrator needs no change.</text>
+</g>
+</svg>
+</body>
+</html>

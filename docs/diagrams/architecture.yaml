@@ -1,0 +1,95 @@
+kind: DiagramSpec
+version: v1
+type: architecture
+title: PAWN Employee Assistant Architecture
+subtitle: Reasoning stays in the orchestrator · MCP servers only provide capability · two model calls per cross-domain query
+direction: top-to-bottom
+metadata:
+  project: pawn-employee-assistant
+  architecture_level: container
+  reference_project: demo-local-ai-hr-it-bot
+zones:
+  - id: web-tier
+    label: apps/web · single Next.js 16 process
+    type: plane
+  - id: mcp-tier
+    label: servers/ · separate processes · data only, no LLM
+    type: plane
+nodes:
+  - id: browser
+    label: Employee Browser
+    sublabel: React · all three stages visible
+    type: user
+    zone: web-tier
+  - id: coordinator
+    label: Orchestrator :3000
+    sublabel: plan → execute → synthesize
+    type: gateway
+    zone: web-tier
+    focal: true
+  - id: hr-server
+    label: HR Server :3101
+    sublabel: employees.csv
+    type: agent
+    zone: mcp-tier
+  - id: it-server
+    label: IT Server :3102
+    sublabel: tickets.sqlite
+    type: agent
+    zone: mcp-tier
+  - id: policy-server
+    label: Policy Server :3103
+    sublabel: policies/*.md
+    type: agent
+    zone: mcp-tier
+  - id: llm-gate
+    label: lib/llm.ts
+    sublabel: the only model exit · gateway or direct
+    type: service
+    focal: true
+edges:
+  - id: e1
+    from: browser
+    to: coordinator
+    label: ask / SSE
+    type: request
+  - id: e2
+    from: coordinator
+    to: hr-server
+    type: request
+    from_port: left
+    to_port: top
+  - id: e3
+    from: coordinator
+    to: it-server
+    label: MCP HTTP
+    type: request
+  - id: e4
+    from: coordinator
+    to: policy-server
+    label: MCP HTTP
+    type: request
+  - id: e5
+    from: coordinator
+    to: llm-gate
+    label: plan + synthesize
+    type: data
+    from_port: right
+    to_port: top
+annotations:
+  - id: a1
+    text: No LLM inside an MCP server. One cross-domain query costs exactly two model calls.
+    target: it-server
+    type: constraint
+  - id: a2
+    text: LLM_PROVIDER switches gateway and direct in one line, with zero code change. Every call is public cloud.
+    target: llm-gate
+    type: note
+  - id: a3
+    text: A new agent self-registers its capabilities; the orchestrator needs no change.
+    target: policy-server
+    type: note
+layout:
+  vertical_gap: 88
+style:
+  profile: default

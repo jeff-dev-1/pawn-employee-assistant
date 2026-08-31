@@ -1,24 +1,30 @@
-# Workflow — Stage Protocol
+# WORKFLOW.md — Stage Protocol
 
 ## The rule
 
-Plan before generating. Every stage ends with a command someone can run.
+**Plan before generating.** For every step: output a plan, wait for confirmation, generate,
+then give an executable acceptance command. Nothing is done because someone said so.
 
-## Each stage
+## Stages
 
-1. **Plan.** State what will be created or changed, and how it will be verified. No code.
-2. **Confirm.** I approve the plan, or narrow it. Scope only shrinks here.
-3. **Generate.** Implement exactly the confirmed plan. Nothing extra, however helpful.
-4. **Accept.** Run the stage's acceptance commands and show the output. A stage is not done
-   because someone said it is done; it is done because a command printed what it should.
-5. **Tag.** `git tag prompt-N` at the accepted state, so any stage can be rejoined later.
+| Stage | Prompts | Output |
+|---|---|---|
+| Context | 0–1 | CLAUDE.md, DESIGN.md, WORKFLOW.md, docs/PRD.md |
+| Provider | 2–4 | A real MCP server with protocol-level acceptance |
+| Consumer | 5–8 | Orchestrator: model exit, planner, concurrency, synthesis, SSE |
+| Hardening | 9–11 | Third agent, debugging, delivery |
+
+## Per-step protocol
+
+1. Restate the constraints from CLAUDE.md that apply to this step.
+2. Output a plan. Do not write code yet.
+3. On confirmation, generate. One commit per logical step.
+4. Give an acceptance command that exits non-zero on failure.
+5. Tag `prompt-N`.
 
 ## Acceptance rules
 
-- Acceptance is executable. "It works" is not acceptance.
-- A green typecheck is not a green run. If a stage produces something runnable, run it.
-- A test that cannot fail is not evidence. Show the failure path at least once per stage.
-
-## When a stage goes wrong
-
-Delete and redo the stage rather than patching forward. The tags exist so this is cheap.
+- An acceptance command is a command, not a description.
+- Protocol-level acceptance uses the official SDK client. Importing the server's internals
+  to "test" it does not count.
+- A step is not done while `npm run typecheck` fails.

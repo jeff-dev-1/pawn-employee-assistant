@@ -2,16 +2,15 @@
 
 ## Identity
 
-An internal employee assistant. Employees ask questions in natural language about HR, IT and
-company policy. A Next.js orchestrator decides which data domains to consult, calls them
-concurrently over MCP, and composes one answer.
+PAWN Employee Assistant. An internal assistant that answers employee questions about HR, IT,
+and company policy. A Next.js orchestrator plans, calls three MCP servers concurrently, and
+composes one answer.
 
 ## Stack (fixed — do not propose alternatives)
 
 - TypeScript strict, Node >= 20.9
 - Next.js 16 App Router + Tailwind
-- MCP via the official `@modelcontextprotocol/sdk`, Streamable HTTP transport
-  (the SSE transport is deprecated and must not be used)
+- MCP via `@modelcontextprotocol/sdk`, Streamable HTTP transport (the SSE transport is deprecated)
 - LLM calls via the Vercel AI SDK `openai-compatible` provider
 - npm workspaces. No pnpm, no turbo, no nx.
 - Tests: vitest

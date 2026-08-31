@@ -1,3 +1,4 @@
+import { runToolLoop } from '@/lib/orchestrator/agent-loop';
 import { execute } from '@/lib/orchestrator/execute';
 import { plan } from '@/lib/orchestrator/plan';
 import { synthesize } from '@/lib/orchestrator/synthesize';
@@ -16,6 +17,13 @@ export async function POST(request: Request) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
 
       try {
+        // Appendix A: the same four event shapes, produced by the AI SDK's tool loop
+        // instead of by the three hand-written stages. Compare the logged call counts.
+        if (process.env.ORCHESTRATOR === 'toolloop') {
+          await runToolLoop(question, currentUser(), send);
+          return;
+        }
+
         // Stage 1: plan. One LLM call.
         const planned = await plan(question, currentUser());
         send({
