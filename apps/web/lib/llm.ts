@@ -74,8 +74,30 @@ function model(modelVar: string, vendorVar: string, fallbackModel: string) {
     }).chatModel(modelId);
   }
 
-  // A virtual key keeps the vendor credential inside the gateway and is the better posture.
-  // Without one the gateway forwards the vendor key we hold, which still works.
+  const { url, headers, apiKey } = endpoint(target);
+  return createOpenAICompatible({
+    name: 'portkey',
+    baseURL: url,
+    headers,
+    apiKey,
+    includeUsage: true,
+  }).chatModel(modelId);
+}
+
+/**
+ * The request the active channel makes, exported so scripts/check-guardrail.ts probes the
+ * same path the application uses instead of a hand-rolled imitation of it.
+ *
+ * A virtual key keeps the vendor credential inside the gateway and is the better posture;
+ * without one the gateway forwards the vendor key we hold. A CONFIG is separate from both,
+ * and it is where a guardrail is attached. Without one the gateway still applies the
+ * account default - which works, and leaves nobody able to say which rule ran.
+ */
+export function endpoint(target = vendor(process.env.WRITER_VENDOR ?? 'deepseek')) {
+  if (activeChannel() === 'direct') {
+    return { url: target.baseURL, headers: {}, apiKey: required(target.apiKeyVar) };
+  }
+
   const virtualKey = process.env[target.virtualKeyVar] ?? process.env.PORTKEY_VIRTUAL_KEY;
   const headers: Record<string, string> = { 'x-portkey-api-key': required('PORTKEY_API_KEY') };
   let apiKey: string | undefined;
@@ -86,14 +108,9 @@ function model(modelVar: string, vendorVar: string, fallbackModel: string) {
     headers['x-portkey-provider'] = target.slug;
     apiKey = required(target.apiKeyVar);
   }
+  if (process.env.PORTKEY_CONFIG) headers['x-portkey-config'] = process.env.PORTKEY_CONFIG;
 
-  return createOpenAICompatible({
-    name: 'portkey',
-    baseURL: process.env.PORTKEY_BASE_URL ?? 'https://api.portkey.ai/v1',
-    headers,
-    apiKey,
-    includeUsage: true,
-  }).chatModel(modelId);
+  return { url: process.env.PORTKEY_BASE_URL ?? 'https://api.portkey.ai/v1', headers, apiKey };
 }
 
 /** Emits structured tool-call plans. Judged on stable JSON, not on prose. */
