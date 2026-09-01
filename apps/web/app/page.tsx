@@ -45,7 +45,9 @@ export default function Home() {
           {turn.cost.length > 0 && (
             <dl className="mb-3 flex flex-wrap gap-x-5 gap-y-1 rounded-lg bg-ink/[0.03] px-3 py-2 font-mono text-[11px] text-muted">
               <div>
-                <dt className="inline text-ink">{turn.cost.length} LLM calls</dt>
+                <dt className="inline text-ink">
+                  {turn.cost.length} LLM call{turn.cost.length === 1 ? '' : 's'}
+                </dt>
               </div>
               {turn.cost.map((c) => (
                 <div key={c.role}>
