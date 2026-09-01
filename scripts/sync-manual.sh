@@ -7,6 +7,9 @@
 #   scripts/sync-manual.sh           rewrite every ref to carry main's manual, locally
 #   scripts/sync-manual.sh --push    ...and force-push, only after the checks below pass
 #
+# --push also pushes when the local refs are already in sync, because `git fetch --tags
+# --force` pulls the remote's stale tags back over them and the drift reappears locally.
+#
 # It rewrites history. Three things are verified before anything leaves the machine:
 # every ref carries the target blob, NOTHING ELSE changed at any ref, and no ref lost a
 # commit. A backup branch per ref is created first and never deleted by this script.
@@ -28,7 +31,15 @@ for r in "${REFS[@]}"; do
 done
 
 if [ ${#drift[@]} -eq 0 ]; then
-  echo "manual is identical across ${#REFS[@]} refs ($target)"
+  echo "manual is identical across ${#REFS[@]} refs locally ($target)"
+  # Not a reason to stop when pushing: the local refs can be in sync while the remote's are
+  # not - which is exactly what happens after a local run, and cost a confusing round trip
+  # the first time this script was used.
+  if [ "$mode" = "--push" ]; then
+    git push -q --force origin "${REFS[@]}"
+    git push -q --force --tags origin
+    echo "pushed"
+  fi
   exit 0
 fi
 echo "drifted from main: ${drift[*]}"
