@@ -22,7 +22,10 @@ if (!process.env.FALLBACK_VENDORS?.includes(',')) {
   process.exit(0);
 }
 
-type Config = { strategy?: { on_status_codes?: number[] }; targets?: { api_key?: string }[] };
+type Config = {
+  strategy?: { on_status_codes?: number[] };
+  targets?: { api_key?: string; input_guardrails?: string[] }[];
+};
 
 /**
  * Sends one request and reports which target served it.
@@ -34,7 +37,13 @@ type Config = { strategy?: { on_status_codes?: number[] }; targets?: { api_key?:
 async function ask(
   label: string,
   content: string,
-  opts: { breakFirst?: boolean; statusCodes?: number[]; role?: 'planner' | 'writer' } = {},
+  opts: {
+    breakFirst?: boolean;
+    statusCodes?: number[];
+    role?: 'planner' | 'writer';
+    /** Strip the guardrail off every target but the first - one forgotten row. */
+    unguardTail?: boolean;
+  } = {},
 ) {
   const { url, headers, apiKey } = endpoint(
     vendorFor(opts.role === 'writer' ? 'WRITER_VENDOR' : 'PLANNER_VENDOR'),
@@ -42,6 +51,7 @@ async function ask(
   const config = JSON.parse(headers['x-portkey-config'] ?? '{}') as Config;
   if (opts.breakFirst && config.targets?.[0]) config.targets[0].api_key = 'sk-0000000000000000';
   if (opts.statusCodes && config.strategy) config.strategy.on_status_codes = opts.statusCodes;
+  if (opts.unguardTail) config.targets?.slice(1).forEach((t) => delete t.input_guardrails);
 
   const response = await fetch(`${url}/chat/completions`, {
     method: 'POST',
@@ -89,6 +99,20 @@ await ask('dead vendor, as shipped', 'Say ok.', { breakFirst: true });
 //    Reports 246 and no denial when PORTKEY_GUARDRAIL is unset: nothing was attached, and the
 //    verdict came from the account default. That is not a pass, it is an untested line.
 await ask('guardrail denies', INJECTION);
+
+// 4b. The same denial with 446 ADDED to the list - which is what Portkey's default
+//     "any non-2xx" does. If this row says 200 and targets[1], the gateway just answered a
+//     question the guardrail refused, and the control became a suggestion. Run it: a hole
+//     you have watched open is worth more than a comment saying it could.
+await ask('...with 446 retryable', INJECTION, { statusCodes: [429, 446, 500, 502, 503, 504] });
+
+// 4c. The hole, exactly. 446 retryable AND one target without the guardrail - which is what
+//     you get by adding a vendor to a hand-written config and forgetting its input_guardrails
+//     row. Everything above still denies; this one does not.
+await ask('...and one target unguarded', INJECTION, {
+  statusCodes: [429, 446, 500, 502, 503, 504],
+  unguardTail: true,
+});
 if (!process.env.PORTKEY_GUARDRAIL) {
   console.log('\nPORTKEY_GUARDRAIL is unset, so the last line proves nothing. Set the `pg-`');
   console.log('guardrail slug - not the `pc-` config slug - and run this again.');

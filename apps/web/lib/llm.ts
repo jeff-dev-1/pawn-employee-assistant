@@ -83,13 +83,21 @@ function vendor(name: string): Vendor {
  * The failures worth trying another vendor for. Everything not on this list is the vendor
  * answering correctly, and a wrong answer does not get better on a second vendor.
  *
- * This list is the entire safety argument for the feature, because of what is NOT on it.
- * Portkey's default is to fall back on any non-2xx, and a guardrail denial is 446 - so a
- * fallback config written the obvious way sends the denied request to the next vendor and
- * serves the answer the guardrail just refused. Portkey documents that as a feature ("blocked
- * on this provider, try that one"). Here it is a hole: the guardrail is the demo. Naming the
- * retryable statuses is what closes it, and leaving 401 and 400 off is deliberate too - a bad
- * key or a malformed request is not transient, and retrying it just bills a second vendor.
+ * Half the safety argument for the feature, because of what is NOT on it. Portkey's default
+ * is to fall back on any non-2xx, and a guardrail denial is 446.
+ *
+ * The other half is below: input_guardrails is derived for EVERY target from one variable.
+ * Measured with npm run fallback, both halves matter and neither is sufficient:
+ *
+ *   446 off this list                          446, targets[0], no second attempt
+ *   446 on it, guardrail on every target       446, targets[1] - denied again, call wasted
+ *   446 on it, one target without a guardrail  246, targets[1], ANSWERED
+ *
+ * So a leak needs two mistakes. The third row is what a hand-written config produces the day
+ * a fourth vendor is added and its guardrail row is forgotten.
+ *
+ * Leaving 401 and 400 off is deliberate too - a bad key or a malformed request is not
+ * transient, and retrying it just bills a second vendor to fail the same way.
  */
 const RETRY_ON = [429, 500, 502, 503, 504];
 

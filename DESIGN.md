@@ -345,12 +345,27 @@ The interesting part is one line:
 const RETRY_ON = [429, 500, 502, 503, 504];
 ```
 
-Portkey's default is to fall back on **any non-2xx**. A guardrail denial is **446**. So a
-fallback config written the obvious way sends a denied request to the next vendor, which has
-no reason to refuse it, and serves the answer the guardrail just blocked. Portkey documents
-this as a feature — "blocked on this provider, try that one" — and for a provider-specific
-content filter that is reasonable. Here the guardrail is the point of appendix B, and routing
-around it turns a control into a suggestion.
+Portkey's default is to fall back on **any non-2xx**, and a guardrail denial is **446**. The
+danger is real but it needs TWO mistakes, which is worth being precise about because the
+first draft of this section claimed one was enough. Measured, `npm run fallback`:
+
+| Probe | Status | Served by |
+|---|---|---|
+| guardrail denies, 446 off the list (shipped) | 446 | `targets[0]`, no second attempt |
+| 446 added to the list, guardrail on every target | 446 | `targets[1]` — refused again, one vendor call wasted |
+| 446 added **and one target missing its guardrail** | **246** | **`targets[1]`, answered** |
+
+Row two is the surprise: with the guardrail attached to *every* target the denial simply
+happens again, and the cost is a wasted vendor call rather than a leak. Row three is the
+hole, and it is what a hand-written config produces the day someone adds a fourth vendor and
+forgets its `input_guardrails` row.
+
+So there are two defences and this repository keeps both. `RETRY_ON` leaves 446 off, and
+`fallbackConfig` derives `input_guardrails` for every target from one `PORTKEY_GUARDRAIL` —
+a target cannot silently lack it, and a missing variable now throws. Portkey documents
+routing around a block as a feature ("blocked on this provider, try that one"), which for a
+provider-specific content filter is reasonable; here the guardrail is the point of appendix
+B, and either defence alone is one forgotten row from a suggestion.
 
 Two more codes are missing on purpose. A **401** is a bad key and a **400** is a bad request:
 neither is transient, so retrying bills a second vendor for a request that fails again, and
