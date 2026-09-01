@@ -317,7 +317,32 @@ demonstration of where the industry went, not a claim about where it should go.
 That contrast — the same governance requirement written into business code versus configured
 at the gateway — is appendix B.
 
-### 4.3 There is no offline path
+### 4.3 The MCP calls do not go through the gateway, and cannot
+
+The obvious symmetry — if the model call goes through Portkey, route the MCP calls through
+Portkey's MCP Gateway too — does not work here, and the reason is structural rather than a
+missing feature.
+
+Portkey's MCP Gateway is a hosted service that connects **outward** to each registered
+server, so a registered URL has to be publicly reachable. Every student runs `hr`, `it` and
+`policy` on their own laptop. There is no URL for Portkey to dial.
+
+Portkey documents the pattern for exactly this case, and it is the one already built here:
+the application holds the connection to the private MCP server, converts the tool catalog
+into function tools, sends those to the gateway with the query, executes any requested call
+locally, and sends the result back. Split by leg:
+
+```
+orchestrator  <->  MCP servers      direct, no gateway, no model
+orchestrator   ->  Portkey  -> vendor    plan and synthesize, guardrail, cost, traces
+```
+
+So the gateway governs every call that leaves the machine, and the calls that never leave it
+are not missing governance — they are calls to the student's own filesystem. Nothing changes
+if a server is later hosted somewhere Portkey can reach; the registry already stores a URL
+per agent, and that URL is the only thing that would move.
+
+### 4.4 There is no offline path
 
 Every model call goes to a public endpoint. This is a deliberate simplification — a local
 model doubles the student prep, costs gigabytes of download in a conference room, and turns

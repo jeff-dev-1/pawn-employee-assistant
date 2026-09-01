@@ -2,15 +2,19 @@
 
 On 2026-08-31 the whole project was rebuilt from `docs/BUILD-FROM-ZERO.md` in a clean
 worktree off `start`: every prompt pasted in order, every acceptance command run, nothing
-copied from `main`. Thirty-seven places where the prompts and this repository disagreed came out of it —
-eighteen from the rebuild itself, five more from reconciling `main` onto the rebuilt lineage
-and redeploying it to the lab node, one from booting all twelve tags from clean checkouts,
-two from checking the claims this project makes about the project it was designed against,
-four from wiring a real Prisma AIRS guardrail into a live gateway and asking it what it
-actually did, one from noticing what the line cap was costing, one from the measuring tools being wrong
+copied from `main`. Thirty-eight places where the prompts and this repository disagreed came
+out of it — eighteen from the rebuild itself, five more from reconciling `main` onto the
+rebuilt lineage and redeploying it to the lab node, one from booting all twelve tags from
+clean checkouts, two from checking the claims this project makes about the project it was
+designed against, four from wiring a real Prisma AIRS guardrail into a live gateway and
+asking it what it actually did, one from finding the UI could hold only one exchange, one
+from noticing what the line cap was costing, two from the measuring tools being wrong
 themselves, one from fixing a leak at the tip and calling it removed, and two from building
-the guardrail demo and finding out what this architecture will and will not do. All of
-them are fixed in the manual; the ones that were also code defects are fixed in `main`.
+the guardrail demo and finding out what this architecture will and will not do, and one from
+reading a vendor's documentation before building against it. All of them are fixed in the
+manual; the ones that were also code defects are fixed in `main`. The last one is a feature
+that was not built, because reading the vendor's documentation showed there was nothing to
+build.
 
 Kept because the next person to change a prompt should know what a replay catches, and
 because several of these had been shipping for weeks without anyone noticing.
@@ -82,3 +86,4 @@ more things the manual asked for and this repository had, or the reverse:
 funnelling through one helper that calls the AIRS client at two places. **A false correction
 is worse than the original error**, because it teaches the reader a wrong fact and cites
 authority for it. Meanwhile "i18n is close to a fifth" is 11% on the branch the other numbers came from and 21% on a newer one. Worse, the document named no ref at all, while that project had moved 129 commits and restructured. | Numbers pinned to `main` = `02ecd06`, the call chain given with file and line so it can be recounted, and both errors corrected in place. |
+| 38 | — | Carried for a week as the next feature to build: **route the MCP calls through Portkey's MCP Gateway too**, symmetry with the model calls, "~15 lines plus registering three servers in the registry". Reading the vendor's own documentation before writing any of it: the MCP Gateway is hosted and connects **outward** to each registered server, so a registered URL must be publicly reachable, and every student runs `hr`, `it` and `policy` on a laptop. There is no URL for Portkey to dial. The same documentation names the pattern for private servers — the app holds the MCP connection, converts the catalog to function tools, executes calls locally, sends results back through the gateway — which is what this repository already does. **The gap was not a gap; it was the vendor's recommended architecture, already built.** The estimate was the tell: fifteen lines is what a change costs when you have pictured the code and not the network. | New §4.3 states why the MCP leg does not go through the gateway, splits the two legs, and says what would have to change if a server were ever hosted where Portkey could reach it — one URL in the registry, no code. Nothing was built. |
