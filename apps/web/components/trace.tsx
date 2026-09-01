@@ -49,13 +49,22 @@ export function Trace({ stages }: { stages: Stage[] }) {
           );
         }
 
+        const v = stage.verdict as
+          | { action?: string; category?: string; profile?: string; detected?: string[] }
+          | undefined;
         return (
           <li key={index} className="flex gap-3 text-accent">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-            <span className="min-w-0 break-words">
+            <div className="min-w-0 break-words">
               {stage.stage && <span className="font-medium">{stage.stage}: </span>}
               {stage.message}
-            </span>
+              {/* The scanner's own words. Without them "blocked" is an assertion. */}
+              {v && (
+                <pre className="mt-1.5 overflow-x-auto rounded-md bg-accent/5 p-2 text-[11px] leading-relaxed">
+                  {`action    ${v.action}\ncategory  ${v.category}\nprofile   ${v.profile}\ndetected  ${(v.detected ?? []).join(', ') || '-'}`}
+                </pre>
+              )}
+            </div>
           </li>
         );
       })}

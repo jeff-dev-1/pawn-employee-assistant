@@ -1,6 +1,8 @@
 'use client';
 
+import { useState } from 'react';
 import { Streamdown } from 'streamdown';
+import { ModeSwitch, QUESTIONS, type Mode } from '@/components/mode-switch';
 import { PromptInput } from '@/components/prompt-input';
 import { Trace } from '@/components/trace';
 import { useAssistant } from '@/lib/use-assistant';
@@ -12,7 +14,8 @@ const LABEL: Record<string, string> = {
 };
 
 export default function Home() {
-  const { ask, turns, status, busy } = useAssistant();
+  const [mode, setMode] = useState<Mode>('normal');
+  const { ask, reset, turns, status, busy } = useAssistant();
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
@@ -22,6 +25,14 @@ export default function Home() {
           One question, routed across HR, IT and company policy, answered from real records.
         </p>
       </header>
+
+      <ModeSwitch
+        mode={mode}
+        onChange={(m) => {
+          setMode(m);
+          reset();
+        }}
+      />
 
       {/* The transcript. Each turn keeps its own trace, so two questions can be compared
           side by side rather than one overwriting the other. */}
@@ -61,7 +72,7 @@ export default function Home() {
         </article>
       ))}
 
-      <PromptInput onSubmit={ask} busy={busy} />
+      <PromptInput onSubmit={(q) => ask(q, mode)} busy={busy} suggestions={QUESTIONS[mode]} />
     </main>
   );
 }

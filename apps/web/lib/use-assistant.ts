@@ -31,7 +31,7 @@ export function useAssistant() {
   }, []);
 
   const ask = useCallback(
-    async (question: string) => {
+    async (question: string, mode = 'normal') => {
       if (running.current || question.trim() === '') return;
       running.current = true;
       setTurns((all) => [...all, { question, stages: [], answer: '', cost: [] }]);
@@ -41,7 +41,7 @@ export function useAssistant() {
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question }),
+          body: JSON.stringify({ question, mode }),
         });
         const reader = response.body?.getReader();
         if (!reader) return;
@@ -120,5 +120,8 @@ export function useAssistant() {
     [patch],
   );
 
-  return { ask, turns, status, busy: status !== 'idle' };
+  /** Switching mode must not leave the previous mode's verdict on screen. */
+  const reset = useCallback(() => setTurns([]), []);
+
+  return { ask, reset, turns, status, busy: status !== 'idle' };
 }

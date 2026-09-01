@@ -22,7 +22,7 @@ export const PlanSchema = z.object({
   reasoning: z.string().default('').describe('One sentence explaining the selection'),
 });
 
-/** What the plan cost, so the UI can put a number next to stage 1. */
+/** What the plan cost, so the UI can put a number next to stage ①. */
 export type Usage = { in: number; out: number };
 
 export type Plan = z.infer<typeof PlanSchema> & { usage?: Usage };

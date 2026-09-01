@@ -59,7 +59,7 @@ function vendor(name: string): Vendor {
   return found;
 }
 
-function model(modelVar: string, vendorVar: string, fallbackModel: string) {
+function model(modelVar: string, vendorVar: string, fallbackModel: string, guarded: boolean) {
   const target = vendor(process.env[vendorVar] ?? 'deepseek');
   const modelId = process.env[modelVar] ?? fallbackModel;
 
@@ -74,7 +74,7 @@ function model(modelVar: string, vendorVar: string, fallbackModel: string) {
     }).chatModel(modelId);
   }
 
-  const { url, headers, apiKey } = endpoint(target);
+  const { url, headers, apiKey } = endpoint(target, guarded);
   return createOpenAICompatible({
     name: 'portkey',
     baseURL: url,
@@ -93,7 +93,7 @@ function model(modelVar: string, vendorVar: string, fallbackModel: string) {
  * and it is where a guardrail is attached. Without one the gateway still applies the
  * account default - which works, and leaves nobody able to say which rule ran.
  */
-export function endpoint(target = vendor(process.env.WRITER_VENDOR ?? 'deepseek')) {
+export function endpoint(target = vendor(process.env.WRITER_VENDOR ?? 'deepseek'), guarded = true) {
   if (activeChannel() === 'direct') {
     return { url: target.baseURL, headers: {}, apiKey: required(target.apiKeyVar) };
   }
@@ -108,17 +108,19 @@ export function endpoint(target = vendor(process.env.WRITER_VENDOR ?? 'deepseek'
     headers['x-portkey-provider'] = target.slug;
     apiKey = required(target.apiKeyVar);
   }
-  if (process.env.PORTKEY_CONFIG) headers['x-portkey-config'] = process.env.PORTKEY_CONFIG;
+  // The config carries the guardrail, so withholding it is what "unguarded" means. Same
+  // gateway, same vendor, same key: one variable.
+  if (guarded && process.env.PORTKEY_CONFIG) headers['x-portkey-config'] = process.env.PORTKEY_CONFIG;
 
   return { url: process.env.PORTKEY_BASE_URL ?? 'https://api.portkey.ai/v1', headers, apiKey };
 }
 
 /** Emits structured tool-call plans. Judged on stable JSON, not on prose. */
-export function planner() {
-  return model('MODEL_PLANNER', 'PLANNER_VENDOR', 'deepseek-chat');
+export function planner(guarded = true) {
+  return model('MODEL_PLANNER', 'PLANNER_VENDOR', 'deepseek-chat', guarded);
 }
 
 /** Writes the employee-facing answer. Judged on prose. */
-export function writer() {
-  return model('MODEL_WRITER', 'WRITER_VENDOR', 'deepseek-chat');
+export function writer(guarded = true) {
+  return model('MODEL_WRITER', 'WRITER_VENDOR', 'deepseek-chat', guarded);
 }

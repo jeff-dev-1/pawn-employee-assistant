@@ -3,18 +3,14 @@
 import { ArrowUp, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
-const SUGGESTIONS = [
-  'How many vacation days do I have left?',
-  'What is the remote work policy?',
-  'Who is my manager, and what tickets have I opened?',
-];
-
 export function PromptInput({
   onSubmit,
   busy,
+  suggestions,
 }: {
   onSubmit: (question: string) => void;
   busy: boolean;
+  suggestions: string[];
 }) {
   const [value, setValue] = useState('');
 
@@ -50,7 +46,7 @@ export function PromptInput({
       </form>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        {SUGGESTIONS.map((suggestion) => (
+        {suggestions.map((suggestion) => (
           <button
             key={suggestion}
             type="button"

@@ -1,11 +1,41 @@
 import { runToolLoop } from '@/lib/orchestrator/agent-loop';
+import { planner, writer } from '@/lib/llm';
 import { execute } from '@/lib/orchestrator/execute';
 import { plan } from '@/lib/orchestrator/plan';
 import { synthesize } from '@/lib/orchestrator/synthesize';
 import { currentUser } from '@/lib/orchestrator/user';
 
+/** Dig the scanner's verdict out of a 446 body: hook_results -> checks -> data. */
+function airsVerdict(body: unknown): unknown {
+  try {
+    const parsed = JSON.parse(String(body)) as {
+      hook_results?: { before_request_hooks?: { checks?: { data?: Record<string, unknown> }[] }[] };
+    };
+    for (const hook of parsed.hook_results?.before_request_hooks ?? []) {
+      for (const check of hook.checks ?? []) {
+        const data = check.data;
+        if (data?.action) {
+          const detected = (data.prompt_detected ?? {}) as Record<string, boolean>;
+          return {
+            action: data.action,
+            category: data.category,
+            profile: data.profile_name,
+            detected: Object.keys(detected).filter((k) => detected[k]),
+          };
+        }
+      }
+    }
+  } catch {
+    // A refusal with an unreadable body is still a refusal; the message already says so.
+  }
+  return undefined;
+}
+
 export async function POST(request: Request) {
-  const { question } = (await request.json()) as { question?: string };
+  const { question, mode } = (await request.json()) as { question?: string; mode?: string };
+  // One variable separates the three modes: whether the guardrail config travels with the
+  // model call. Nothing else here, and nothing at all in servers/, knows the difference.
+  const guarded = mode === 'protected';
   if (!question) {
     return Response.json({ status: 'invalid_args', detail: 'question is required' }, { status: 400 });
   }
@@ -25,7 +55,7 @@ export async function POST(request: Request) {
         }
 
         // Stage 1: plan. One LLM call.
-        const planned = await plan(question, currentUser());
+        const planned = await plan(question, currentUser(), planner(guarded));
         send({
           type: 'plan',
           calls: planned.calls,
@@ -59,7 +89,7 @@ export async function POST(request: Request) {
 
         // Stage 3: synthesize. One streaming LLM call. Consume the FULL stream, not
         // textStream: textStream drops `error` parts and an failing writer looks like silence.
-        const result = synthesize(question, outcomes);
+        const result = synthesize(question, outcomes, writer(guarded));
         let emitted = 0;
         for await (const part of result.stream) {
           if (part.type === 'text-delta') {
@@ -75,7 +105,7 @@ export async function POST(request: Request) {
         }
         const usage = await result.totalUsage;
         // Two calls, and the UI can now show which one cost what. That is the claim of
-        // DESIGN.md section 2.2 made checkable instead of asserted.
+        // section 2.2 made checkable instead of asserted.
         send({
           type: 'answer',
           delta: '',
@@ -88,7 +118,11 @@ export async function POST(request: Request) {
       } catch (error) {
         // Say who refused. 446 is the gateway's guardrail, and the trace id is what turns
         // "it broke" into a row someone can look up.
-        const api = error as { statusCode?: number; responseHeaders?: Record<string, string> };
+        const api = error as {
+          statusCode?: number;
+          responseHeaders?: Record<string, string>;
+          responseBody?: string;
+        };
         const denied = api.statusCode === 446;
         const trace = api.responseHeaders?.['x-portkey-trace-id'];
         send({
@@ -97,6 +131,9 @@ export async function POST(request: Request) {
           message: denied
             ? `Blocked by the gateway guardrail${trace ? ` · trace ${trace}` : ''}`
             : error instanceof Error ? error.message : String(error),
+          // The scanner's own verdict rides in the refusal body. Passing it through is what
+          // turns "blocked" into "blocked by this policy, for this reason".
+          ...(denied ? { verdict: airsVerdict(api.responseBody) } : {}),
         });
       } finally {
         controller.close();
