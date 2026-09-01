@@ -2,7 +2,7 @@
 
 On 2026-08-31 the whole project was rebuilt from `docs/BUILD-FROM-ZERO.md` in a clean
 worktree off `start`: every prompt pasted in order, every acceptance command run, nothing
-copied from `main`. Thirty-eight places where the prompts and this repository disagreed came
+copied from `main`. Thirty-nine places where the prompts and this repository disagreed came
 out of it — eighteen from the rebuild itself, five more from reconciling `main` onto the
 rebuilt lineage and redeploying it to the lab node, one from booting all twelve tags from
 clean checkouts, two from checking the claims this project makes about the project it was
@@ -11,7 +11,8 @@ asking it what it actually did, one from finding the UI could hold only one exch
 from noticing what the line cap was costing, two from the measuring tools being wrong
 themselves, one from fixing a leak at the tip and calling it removed, and two from building
 the guardrail demo and finding out what this architecture will and will not do, and one from
-reading a vendor's documentation before building against it. All of them are fixed in the
+reading a vendor's documentation before building against it, and one from reading the other
+project's source and finding that documentation had not been enough. All of them are fixed in the
 manual; the ones that were also code defects are fixed in `main`. The last one is a feature
 that was not built, because reading the vendor's documentation showed there was nothing to
 build.
@@ -87,3 +88,4 @@ funnelling through one helper that calls the AIRS client at two places. **A fals
 is worse than the original error**, because it teaches the reader a wrong fact and cites
 authority for it. Meanwhile "i18n is close to a fifth" is 11% on the branch the other numbers came from and 21% on a newer one. Worse, the document named no ref at all, while that project had moved 129 commits and restructured. | Numbers pinned to `main` = `02ecd06`, the call chain given with file and line so it can be recounted, and both errors corrected in place. |
 | 38 | — | Carried for a week as the next feature to build: **route the MCP calls through Portkey's MCP Gateway too**, symmetry with the model calls, "~15 lines plus registering three servers in the registry". Reading the vendor's own documentation before writing any of it: the MCP Gateway is hosted and connects **outward** to each registered server, so a registered URL must be publicly reachable, and every student runs `hr`, `it` and `policy` on a laptop. There is no URL for Portkey to dial. The same documentation names the pattern for private servers — the app holds the MCP connection, converts the catalog to function tools, executes calls locally, sends results back through the gateway — which is what this repository already does. **The gap was not a gap; it was the vendor's recommended architecture, already built.** The estimate was the tell: fifteen lines is what a change costs when you have pictured the code and not the network. | New §4.3 states why the MCP leg does not go through the gateway, splits the two legs, and says what would have to change if a server were ever hosted where Portkey could reach it — one URL in the registry, no code. Nothing was built. |
+| 39 | — | **Finding 38 was half wrong, and the correction is the better finding.** What held: Portkey's hosted MCP Gateway dials *outward*, so a laptop-hosted server cannot be registered - which is why no student will ever do this. What did not hold: "there was nothing to build". Reading the reference repository rather than only the vendor's docs, they **did** build it - their tools servers are hosted, registered, and reached at `https://mcp.portkey.ai/<slug>/mcp`, and `PORTKEY_MCP_BASE` also accepts a self-hosted gateway at `<host>:8788`, which is the answer to a question asked in this session and answered badly at the time. Then they **routed around their own gateway on the hot path**. `IT_TRIAGE_MCP_URLS` points the agent's data calls straight at the tools servers over the docker network, and their comment says why: *"skipping the Portkey MCP cloud round-trip (~1-2s per call). The multi-step agent makes 6-9 data calls, so the nested cloud hops dominate latency and trip Portkey's upstream gateway timeout -> 502 on the write path. LLM calls still go through Portkey."* | DESIGN 4.3 rewritten: the MCP leg staying direct is no longer justified only by "students run on a laptop" - it is the shape the other team's own hot path fell back to, measured, after building the alternative. The lesson about the estimate stands and gets sharper: "fifteen lines" was wrong, but so was "nothing to build", and both errors came from stopping at the first source that agreed with me. |

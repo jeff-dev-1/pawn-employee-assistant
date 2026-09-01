@@ -418,7 +418,22 @@ server, so a registered URL has to be publicly reachable. Every student runs `hr
 Portkey documents the pattern for exactly this case, and it is the one already built here:
 the application holds the connection to the private MCP server, converts the tool catalog
 into function tools, sends those to the gateway with the query, executes any requested call
-locally, and sends the result back. Split by leg:
+locally, and sends the result back.
+
+**And the other team, whose servers *are* hosted, ended up on the same split by measurement.**
+They built the gateway route — their tools servers are registered and reached at
+`https://mcp.portkey.ai/<slug>/mcp` — and then added `IT_TRIAGE_MCP_URLS` to point the
+agent's data calls straight at those servers over the docker network. Their reason, in their
+own comment: the cloud round trip costs 1–2 s per call, the multi-step agent makes 6–9 data
+calls, and the nested hops trip the gateway's upstream timeout into a 502 on the write path.
+LLM calls still go through Portkey. So the leg that carries no model is also the leg that
+cannot afford the hop, and that is a stronger argument than the laptop one.
+
+(`PORTKEY_MCP_BASE` also accepts a self-hosted gateway at `<host>:8788` — which is the
+answer to "why would you run your own gateway if you are using Portkey": to put it on the
+same network as the servers it has to reach.)
+
+Split by leg:
 
 ```
 orchestrator  <->  MCP servers      direct, no gateway, no model
