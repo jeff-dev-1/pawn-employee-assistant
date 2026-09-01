@@ -13,6 +13,7 @@ import {
   type NodeProps,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { Boxes, Database, ShieldCheck, Sparkles, User, type LucideIcon } from 'lucide-react';
 import { useMemo } from 'react';
 import type { Channel, Routing } from '@/lib/workflow-script';
 import { ROLES, vendorsFor } from '@/lib/workflow-script';
@@ -45,6 +46,7 @@ type CardData = {
   pills?: string[];
   tone: 'idle' | 'live' | 'fail';
   accent: string;
+  icon: LucideIcon;
 };
 type ZoneData = { label: string; color: string };
 type EdgeData = { tone: 'idle' | 'live' | 'fail'; note?: string };
@@ -64,7 +66,10 @@ function Card({ data }: NodeProps) {
       }}
     >
       <span className="flex items-center justify-between gap-2">
-        <span className="truncate text-sm font-medium">{d.title}</span>
+        <span className="flex min-w-0 items-center gap-2">
+          <d.icon className="size-4 shrink-0" style={{ color: d.accent }} />
+          <span className="truncate text-sm font-medium">{d.title}</span>
+        </span>
         {d.tag && (
           <span
             className="shrink-0 rounded-full border px-1.5 py-px font-mono text-[9px] tracking-wide uppercase"
@@ -204,7 +209,9 @@ const edgeTypes = { spoke: Spoke };
  * whole picture near the canvas's aspect ratio instead of a letterbox strip with the bottom
  * two thirds empty.
  */
-const X = { you: -300, orch: 40, gw: 460 };
+// `you` used to sit a full column out on its own, which made fitView reserve a third of
+// the canvas for one card. Tucked against the app zone instead.
+const X = { you: -170, orch: 40, gw: 460 };
 // ext clears the SaaS zone's bottom edge (airs at mcp + its height + padding), or the
 // two dashed boxes overlap and the picture stops meaning anything.
 const Y = { top: 40, mcp: 230, ext: 440 };
@@ -230,7 +237,7 @@ function sidesFor(id: string): [Side, Side] {
 /** Every card's home, so the zone boxes can be computed instead of guessed. */
 function placeCards(channel: Channel, routing: Routing, agents: string[]) {
   const cards: { id: string; x: number; y: number; h?: number; data: Omit<CardData, 'tone'> }[] = [
-    { id: 'you', x: X.you, y: Y.top + 70, data: { title: 'You', accent: GREY } },
+    { id: 'you', x: X.you, y: Y.top + 70, data: { title: 'You', accent: GREY, icon: User } },
     {
       id: 'orch',
       x: X.orch + GAP,
@@ -238,6 +245,7 @@ function placeCards(channel: Channel, routing: Routing, agents: string[]) {
       h: 70,
       data: {
         title: 'Orchestrator',
+        icon: Sparkles,
         tag: 'app',
         pills: ['plan', 'execute', 'synthesize'],
         accent: ORANGE,
@@ -251,7 +259,7 @@ function placeCards(channel: Channel, routing: Routing, agents: string[]) {
       id: name,
       x: X.orch + GAP + i * GAP - spread / 2,
       y: Y.mcp,
-      data: { title: `${name} server`, tag: 'mcp', accent: ORANGE },
+      data: { title: `${name} server`, tag: 'mcp', accent: ORANGE, icon: Database },
     }),
   );
   // GAP alone leaves the app zone's padded edge touching the SaaS zone's. The gutter is
@@ -266,6 +274,7 @@ function placeCards(channel: Channel, routing: Routing, agents: string[]) {
       h: 96,
       data: {
         title: 'Portkey gateway',
+        icon: Boxes,
         tag: 'saas',
         pills:
           routing === 'fallback'
@@ -281,6 +290,7 @@ function placeCards(channel: Channel, routing: Routing, agents: string[]) {
       h: 96,
       data: {
         title: 'Prisma AIRS',
+        icon: ShieldCheck,
         tag: 'guardrail',
         pills: ['injection', 'toxicity', 'dlp', 'url', 'code', 'redaction'],
         accent: CYAN,
@@ -294,7 +304,7 @@ function placeCards(channel: Channel, routing: Routing, agents: string[]) {
       id: r.vendor,
       x: channel === 'portkey' ? gwX + (i - (ROLES.length - 1) / 2) * GAP : rightX,
       y: channel === 'portkey' ? Y.ext : Y.top + i * 84,
-      data: { title: r.vendor, tag: r.role, accent: GREY },
+      data: { title: r.vendor, tag: r.role, accent: GREY, icon: Sparkles },
     }),
   );
   return cards;
