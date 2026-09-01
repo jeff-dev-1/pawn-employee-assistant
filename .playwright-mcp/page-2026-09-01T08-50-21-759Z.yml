@@ -1,0 +1,24 @@
+- generic [active] [ref=f9e1]:
+  - generic [ref=f9e2]:
+    - banner [ref=f9e3]:
+      - generic [ref=f9e4]: PAWN Assistant
+      - navigation [ref=f9e9]:
+        - button "Normal usage" [pressed] [ref=f9e10]
+        - button "Risky usage" [ref=f9e14]
+        - button "Protected mode" [ref=f9e17]
+    - main [ref=f9e21]:
+      - complementary [ref=f9e22]:
+        - heading "Example questions" [level=2] [ref=f9e23]
+        - generic [ref=f9e26]:
+          - button "Remaining leave" [ref=f9e27]
+          - button "Remote work" [ref=f9e31]
+          - button "Manager and tickets" [ref=f9e36]
+      - generic [ref=f9e43]:
+        - paragraph [ref=f9e46]: One question, routed across HR, IT and company policy, answered from real records.
+        - generic [ref=f9e50]:
+          - textbox "Type your message here…" [ref=f9e51]
+          - generic [ref=f9e52]:
+            - generic [ref=f9e53]: planner → 3 MCP servers → writer
+            - button "Ask" [disabled] [ref=f9e54]
+  - button "Open Next.js Dev Tools" [ref=f9e62] [cursor=pointer]
+  - alert [ref=f9e66]

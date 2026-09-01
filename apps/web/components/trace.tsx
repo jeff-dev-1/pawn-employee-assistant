@@ -7,7 +7,7 @@ export function Trace({ stages }: { stages: Stage[] }) {
   if (stages.length === 0) return null;
 
   return (
-    <ol className="mb-8 space-y-2 rounded-xl border border-line bg-white/60 p-4 text-sm">
+    <ol className="mb-4 space-y-2 rounded-2xl border border-line bg-card/70 p-4 text-sm">
       {stages.map((stage, index) => {
         if (stage.kind === 'plan') {
           return (
@@ -37,7 +37,7 @@ export function Trace({ stages }: { stages: Stage[] }) {
           return (
             <li key={index} className="flex items-center gap-3">
               {stage.ok ? (
-                <Check className="size-4 shrink-0 text-emerald-600" />
+                <Check className="size-4 shrink-0 text-brand-green" />
               ) : (
                 <X className="size-4 shrink-0 text-accent" />
               )}
