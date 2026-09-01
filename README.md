@@ -53,9 +53,11 @@ Fell behind? `git checkout prompt-N` rejoins at the end of step N.
 | `start` | Student starting point: the build manual and nothing else. |
 | `prompt-0` … `prompt-11` | Snapshot at the end of each step, for rejoining. |
 | `prompt-10-bug` | The planted `Promise.all` regression Prompt 10 diagnoses, forked from `prompt-9`. |
+| `demo/topology` | `main` plus the workflow replay: the pipeline as a graph, with a player and three switches that are real environment variables. **Not on the teaching line** - no prompt asks for it, and it puts the tree over the 2400-line cap. Presentation asset only. |
 | `backup/*` | The previous history, kept until the next cohort. Safe to delete. |
 
-**One world line: `start` → `prompt-0` … `prompt-11` → `main`.** The whole tree was produced
+**One world line: `start` → `prompt-0` … `prompt-11` → `main`**, with `demo/topology` hanging
+off the end of it as a demo and never merging back. The whole tree was produced
 by building the project from the manual in a clean checkout on 2026-08-31 — every prompt
 pasted in order, every acceptance command run — so what a student finishes with really is
 what `git clone` gives them, and `git diff prompt-11 main` is a short, readable list of what

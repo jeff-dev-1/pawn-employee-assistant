@@ -132,9 +132,46 @@ architecture than the contrast in §2.1 ever was**, and it is the honest way to 
 this demo is not a correction of that project, it is the same conclusion reached from the
 other end, with the reasoning left visible because the reasoning is the lesson.
 
-What still differs is the shape of the reasoning layer. The reference project keeps one
-`it-triage-agent` that calls a model of its own; this demo puts every model call in the
-orchestrator, which is what makes "which step uses the LLM" answerable in a classroom.
+### 2.1.2 The one thing they kept and we did not
+
+Four matching conclusions is the headline, and it would be a dishonest one on its own. The
+reference project kept a distinction this demo bans outright, and their own diagram is where
+you see it: the `APP` box holds three cards, and two of them are badged **Agent** while one
+is badged **MCP**. That is not a labelling choice.
+
+| Node | Badge | Model calls |
+|---|---|---|
+| `agents/it-triage-agent` | Agent | `agent.js:298`, `model: openai.chat(MODEL_ID)`, through Portkey to Bedrock |
+| `mcp-server/hr-tools-mcp-server` | MCP | none |
+| `mcp-server/it-tools-mcp-server` | MCP | none |
+
+So the two paths have different shapes. HR is one hop — the gateway calls a tool. IT is two —
+the gateway calls an agent, and that agent decides what to do and then calls ServiceNow
+itself. The reason is the work: an IT ticket needs classifying against a process definition
+(`it-processes.json`), and a leave balance needs looking up. **They put a model where
+judgement was needed and left it out where it was not.** ServiceNow sits outside the `APP`
+box for the same kind of reason — the box means "what runs on the customer's side", and
+their zones are computed from an id list rather than drawn, so switching the demo to
+on-premises moves the gateway *into* that box and the picture follows.
+
+This demo bans that node (prohibition 1) and pays for it. A single-shot planner cannot make a
+decision that depends on a tool result it has not seen yet. `Who else reports to my manager?`
+is refused 7 times out of 7 — structurally, not statistically — because it needs two hops.
+
+The honest framing is not that one is right. It is that the same capability sits in a
+different place, and the placement is the trade:
+
+| | Reference | This demo |
+|---|---|---|
+| Where the loop lives | inside one node, permanently | the whole orchestrator, behind `ORCHESTRATOR=toolloop` |
+| What a student sees | one architecture containing a reasoning node | **one question, two orchestrators, token counts side by side** |
+| Model calls | IT path costs an extra one | two, always: plan and synthesize |
+| Guardrail surface | every agent's call must also go through the gateway; miss one and it is a hole | two exits, both in `lib/llm.ts` |
+| Adding a domain | decide first whether it is an agent or a tool | always a tool; register it |
+
+`lib/orchestrator/agent-loop.ts` is 111 lines and is appendix A. We did not decline the
+capability; we made it the experiment instead of the architecture, because a room learns more
+from running both than from being told which one won.
 
 ### 2.2 The orchestrator pipeline
 
