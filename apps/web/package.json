@@ -13,6 +13,7 @@
     "@ai-sdk/openai-compatible": "^3.0.41",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@tailwindcss/postcss": "^4.3.3",
+    "@xyflow/react": "^12.11.5",
     "ai": "^7.0.85",
     "clsx": "^2.1.1",
     "lucide-react": "^1.38.0",

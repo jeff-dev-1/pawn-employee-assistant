@@ -7,6 +7,7 @@ import {
   Languages,
   Monitor,
   Moon,
+  Route,
   Sparkles,
   Sun,
 } from 'lucide-react';
@@ -17,6 +18,7 @@ import { EXAMPLES, MODES, ModeSwitch, type Mode } from '@/components/mode-switch
 import { PromptInput } from '@/components/prompt-input';
 import { Menu } from '@/components/menu';
 import { Trace } from '@/components/trace';
+import { WorkflowReplay } from '@/components/workflow-replay';
 import { LANGS, useI18n, type Lang } from '@/lib/i18n';
 import { useAssistant } from '@/lib/use-assistant';
 
@@ -27,6 +29,16 @@ export default function Home() {
   const modeLabel = MODES.find((m) => m.id === mode)?.label ?? '';
   const end = useRef<HTMLDivElement>(null);
   const [theme, setTheme] = useState<Theme>('system');
+  const [replay, setReplay] = useState(false);
+  const [agents, setAgents] = useState<string[]>([]);
+
+  // The replay draws the servers that actually registered, so a fourth one draws itself.
+  useEffect(() => {
+    fetch('/api/health')
+      .then((r) => r.json())
+      .then((d: { agents?: { name: string }[] }) => setAgents((d.agents ?? []).map((a) => a.name)))
+      .catch(() => undefined);
+  }, []);
 
   // Restoring before first paint would need a blocking script tag in <head>; one frame of
   // the system theme is the cheaper trade for a demo.
@@ -87,8 +99,28 @@ export default function Home() {
             onChange={setLang}
             options={LANGS.map((l) => ({ id: l.id as Lang, label: l.label }))}
           />
+          <button
+            type="button"
+            onClick={() => setReplay(true)}
+            title={t('replay.open')}
+            className="grid size-9 place-items-center rounded-xl border border-line text-muted transition hover:border-[var(--primary)] hover:text-[var(--primary)] sm:size-10"
+          >
+            <Route className="size-4" />
+          </button>
         </span>
       </header>
+
+      {replay && (
+        <WorkflowReplay
+          mode={mode}
+          onMode={(m) => {
+            setMode(m);
+            reset();
+          }}
+          agents={agents}
+          onClose={() => setReplay(false)}
+        />
+      )}
 
 
       <main className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden md:grid-cols-[320px_1fr]">

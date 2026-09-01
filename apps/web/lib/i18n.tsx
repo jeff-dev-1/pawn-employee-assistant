@@ -87,6 +87,9 @@ const EN = {
   'theme.dark': 'Dark',
   'theme.title': 'Theme',
   'lang.title': 'Language',
+  'replay.open': 'Workflow replay',
+  'replay.title': 'Workflow replay',
+  'replay.close': 'Close',
 } as const;
 
 export type Key = keyof typeof EN;
@@ -155,6 +158,9 @@ const ZH: Partial<Record<Key, string>> = {
   'theme.dark': '深色',
   'theme.title': '主題',
   'lang.title': '語言',
+  'replay.open': '工作流回放',
+  'replay.title': '工作流回放',
+  'replay.close': '關閉',
 };
 
 const DICT: Record<Lang, Partial<Record<Key, string>>> = { en: EN, 'zh-Hant': ZH };
