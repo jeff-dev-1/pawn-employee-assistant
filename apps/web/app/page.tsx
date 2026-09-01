@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Copy as CopyIcon, Sparkles } from 'lucide-react';
+import { Check, Copy as CopyIcon, ExternalLink, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Streamdown } from 'streamdown';
 import { Examples, flatten } from '@/components/examples';
@@ -100,6 +100,20 @@ export default function Home() {
                         </div>
                       ))}
                       <span className="flex-1" />
+                      {/* The id is not the point; opening the row is. Printed as text it is
+                          something to read aloud, and nobody in the room can act on it. */}
+                      {turn.trace?.url && (
+                        <a
+                          href={turn.trace.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-1 rounded-lg px-1.5 py-0.5 transition hover:text-ink"
+                        >
+                          <ExternalLink className="size-3" />
+                          trace
+                        </a>
+                      )}
+                      {turn.trace && !turn.trace.url && <span>trace {turn.trace.id.slice(0, 8)}</span>}
                       {turn.answer && <Copy text={turn.answer} />}
                     </dl>
                   )}

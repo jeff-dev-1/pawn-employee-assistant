@@ -384,6 +384,12 @@ slug that holds the guardrail cannot also hold the routing; each target names th
 guardrail slug in `input_guardrails` instead. That is why `PORTKEY_CONFIG` and
 `PORTKEY_GUARDRAIL` are two variables and not one.
 
+Observed, not imagined: `FALLBACK_VENDORS` was set one afternoon to route around a vendor
+outage, and `npm run guardrail` went from `446 DENIED` to `246 flagged-and-allowed` with
+nothing anywhere reporting it. `lib/llm.ts` now throws in that combination. **A warning in
+`.env.example` is not a guard**, and the failure mode of this class of bug is that everything
+keeps working.
+
 ### 4.2 Portkey and Prisma AIRS
 
 Portkey was acquired by Palo Alto Networks in May 2026 and is now the gateway for Prisma AIRS.

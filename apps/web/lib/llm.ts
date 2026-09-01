@@ -119,6 +119,25 @@ function fallbackConfig(preferred: Vendor, guarded: boolean): Record<string, unk
     ? [preferredName, ...listed.filter((n) => n !== preferredName)]
     : listed;
 
+  /**
+   * A request that believes it is guarded and is not.
+   *
+   * The routing config occupies the one config header, so PORTKEY_CONFIG - which is where
+   * the guardrail normally lives - is not sent while fallback is on. The guardrail has to be
+   * named per target instead, by its own `pg-` slug. Miss that and everything still works:
+   * the answers arrive, the demo looks right, and the control is gone. This was not
+   * hypothetical - turning fallback on to route around a vendor outage silently took
+   * `npm run guardrail` from 446 DENIED to 246 flagged-and-allowed, and nothing said so.
+   *
+   * So it throws, naming the variable, the way a missing key does.
+   */
+  if (guarded && !process.env.PORTKEY_GUARDRAIL) {
+    throw new Error(
+      'PORTKEY_GUARDRAIL is required when FALLBACK_VENDORS is set: the routing config ' +
+        'occupies x-portkey-config, so the guardrail must be attached per target by its ' +
+        'own pg- slug. Set it, or unset FALLBACK_VENDORS.',
+    );
+  }
   const guardrail = guarded ? process.env.PORTKEY_GUARDRAIL : undefined;
   const targets = names.map((name) => {
     const target = vendor(name);
@@ -137,7 +156,13 @@ function fallbackConfig(preferred: Vendor, guarded: boolean): Record<string, unk
   return { strategy: { mode: 'fallback', on_status_codes: RETRY_ON }, targets };
 }
 
-function model(modelVar: string, vendorVar: string, fallbackModel: string, guarded: boolean) {
+function model(
+  modelVar: string,
+  vendorVar: string,
+  fallbackModel: string,
+  guarded: boolean,
+  traceId?: string,
+) {
   const target = vendor(process.env[vendorVar] ?? 'deepseek');
   const modelId = process.env[modelVar] ?? fallbackModel;
 
@@ -152,7 +177,7 @@ function model(modelVar: string, vendorVar: string, fallbackModel: string, guard
     }).chatModel(modelId);
   }
 
-  const { url, headers, apiKey } = endpoint(target, guarded);
+  const { url, headers, apiKey } = endpoint(target, guarded, traceId);
   return createOpenAICompatible({
     name: 'portkey',
     baseURL: url,
@@ -171,13 +196,37 @@ function model(modelVar: string, vendorVar: string, fallbackModel: string, guard
  * and it is where a guardrail is attached. Without one the gateway still applies the
  * account default - which works, and leaves nobody able to say which rule ran.
  */
-export function endpoint(target = vendor(process.env.WRITER_VENDOR ?? 'deepseek'), guarded = true) {
+export function endpoint(
+  target = vendor(process.env.WRITER_VENDOR ?? 'deepseek'),
+  guarded = true,
+  traceId?: string,
+) {
   if (activeChannel() === 'direct') {
     return { url: target.baseURL, headers: {}, apiKey: required(target.apiKeyVar) };
   }
 
   const virtualKey = process.env[target.virtualKeyVar] ?? process.env.PORTKEY_VIRTUAL_KEY;
-  const headers: Record<string, string> = { 'x-portkey-api-key': required('PORTKEY_API_KEY') };
+  /**
+   * Two ways to attach the guardrail, and they are not equivalent.
+   *
+   * PORTKEY_API_KEY_GUARDED is a second key with the guardrail config bound to it in the
+   * dashboard. The rule then lives on the credential: the application cannot send a request
+   * that skips it, because skipping it would mean holding a different key. That is the
+   * posture to ship.
+   *
+   * x-portkey-config, below, attaches the same guardrail per request - which means the
+   * application decides, every time, whether to be guarded. That is a hole in production and
+   * exactly the point in a classroom, because it is what makes mode 2 and mode 3 differ by
+   * one variable. This demo supports both so the difference can be said out loud.
+   */
+  const guardedKey = process.env.PORTKEY_API_KEY_GUARDED;
+  const headers: Record<string, string> = {
+    'x-portkey-api-key':
+      guarded && guardedKey ? guardedKey : required('PORTKEY_API_KEY'),
+  };
+  // Ours, not the gateway's. Sending the id means every turn has a log line we can link to,
+  // instead of only the ones that failed loudly enough to return a header.
+  if (traceId) headers['x-portkey-trace-id'] = traceId;
   let apiKey: string | undefined;
 
   // A fallback config names its own providers and models per target, so the single-vendor
@@ -195,18 +244,46 @@ export function endpoint(target = vendor(process.env.WRITER_VENDOR ?? 'deepseek'
     apiKey = required(target.apiKeyVar);
   }
   // The config carries the guardrail, so withholding it is what "unguarded" means. Same
-  // gateway, same vendor, same key: one variable.
-  if (guarded && process.env.PORTKEY_CONFIG) headers['x-portkey-config'] = process.env.PORTKEY_CONFIG;
+  // gateway, same vendor, same key: one variable. Skipped when a guarded key is configured,
+  // because then the rule is already on the credential and naming it again changes nothing.
+  if (guarded && !guardedKey && process.env.PORTKEY_CONFIG) {
+    headers['x-portkey-config'] = process.env.PORTKEY_CONFIG;
+  }
 
   return { url: process.env.PORTKEY_BASE_URL ?? 'https://api.portkey.ai/v1', headers, apiKey };
 }
 
 /** Emits structured tool-call plans. Judged on stable JSON, not on prose. */
-export function planner(guarded = true) {
-  return model('MODEL_PLANNER', 'PLANNER_VENDOR', 'deepseek-chat', guarded);
+export function planner(guarded = true, traceId?: string) {
+  return model('MODEL_PLANNER', 'PLANNER_VENDOR', 'deepseek-chat', guarded, traceId);
 }
 
 /** Writes the employee-facing answer. Judged on prose. */
-export function writer(guarded = true) {
-  return model('MODEL_WRITER', 'WRITER_VENDOR', 'deepseek-chat', guarded);
+export function writer(guarded = true, traceId?: string) {
+  return model('MODEL_WRITER', 'WRITER_VENDOR', 'deepseek-chat', guarded, traceId);
+}
+
+/**
+ * Where to read this turn in the gateway's logs. Two URL shapes, because there are two
+ * consoles: Strata Cloud Manager once the gateway is SCM-managed, standalone Portkey before
+ * that. Returns undefined rather than a broken link when the ids are not configured - a
+ * button that 404s is worse than no button.
+ */
+export function traceUrl(traceId: string): string | undefined {
+  const workspace = process.env.PORTKEY_WORKSPACE_ID;
+  if (!workspace) return undefined;
+  const scm = process.env.PRISMA_AIRS_TSG_ID && process.env.PORTKEY_DEPLOYMENT_ID;
+  const q = new URLSearchParams({
+    workspaceId: workspace,
+    traceView: 'true',
+    selectedTraceId: traceId,
+    logLogStoreFilePathFormat: scm ? 'v2' : 'v1',
+  });
+  if (!scm) {
+    const org = process.env.PORTKEY_ORG_ID;
+    return org ? `https://app.portkey.ai/organisation/${org}/logs?${q}` : undefined;
+  }
+  q.set('tsg_id', process.env.PRISMA_AIRS_TSG_ID!);
+  q.set('licenseId', process.env.PORTKEY_DEPLOYMENT_ID!);
+  return `https://stratacloudmanager.paloaltonetworks.com/ai-security/gateway/observability/logs?${q}`;
 }

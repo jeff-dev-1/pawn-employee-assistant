@@ -1,5 +1,5 @@
 import { runToolLoop } from '@/lib/orchestrator/agent-loop';
-import { planner, writer } from '@/lib/llm';
+import { planner, traceUrl, writer } from '@/lib/llm';
 import { execute } from '@/lib/orchestrator/execute';
 import { plan } from '@/lib/orchestrator/plan';
 import { synthesize } from '@/lib/orchestrator/synthesize';
@@ -36,6 +36,9 @@ export async function POST(request: Request) {
   // One variable separates the three modes: whether the guardrail config travels with the
   // model call. Nothing else here, and nothing at all in servers/, knows the difference.
   const guarded = mode === 'protected';
+  // Minted here, sent on both model calls, and reported to the UI - so every turn has a log
+  // line to open, not only the ones that failed loudly enough to return a header.
+  const traceId = crypto.randomUUID();
   if (!question) {
     return Response.json({ status: 'invalid_args', detail: 'question is required' }, { status: 400 });
   }
@@ -55,13 +58,15 @@ export async function POST(request: Request) {
         }
 
         // Stage 1: plan. One LLM call.
-        const planned = await plan(question, currentUser(), planner(guarded));
+        const planned = await plan(question, currentUser(), planner(guarded, traceId));
         send({
           type: 'plan',
           calls: planned.calls,
           reasoning: planned.reasoning,
           usage: planned.usage,
           ms: planned.ms,
+          trace: traceId,
+          traceUrl: traceUrl(traceId),
         });
 
         if (planned.calls.length === 0) {
@@ -92,7 +97,7 @@ export async function POST(request: Request) {
 
         // Stage 3: synthesize. One streaming LLM call. Consume the FULL stream, not
         // textStream: textStream drops `error` parts and an failing writer looks like silence.
-        const result = synthesize(question, outcomes, writer(guarded));
+        const result = synthesize(question, outcomes, writer(guarded, traceId));
         let emitted = 0;
         for await (const part of result.stream) {
           if (part.type === 'text-delta') {
@@ -127,7 +132,7 @@ export async function POST(request: Request) {
           responseBody?: string;
         };
         const denied = api.statusCode === 446;
-        const trace = api.responseHeaders?.['x-portkey-trace-id'];
+        const trace = api.responseHeaders?.['x-portkey-trace-id'] ?? traceId;
         send({
           type: 'error',
           stage: denied ? 'guardrail' : 'orchestrator',
@@ -137,6 +142,8 @@ export async function POST(request: Request) {
           // The scanner's own verdict rides in the refusal body. Passing it through is what
           // turns "blocked" into "blocked by this policy, for this reason".
           ...(denied ? { verdict: airsVerdict(api.responseBody) } : {}),
+          trace,
+          traceUrl: traceUrl(trace),
         });
       } finally {
         controller.close();

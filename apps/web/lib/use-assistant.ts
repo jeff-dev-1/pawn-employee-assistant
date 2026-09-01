@@ -7,6 +7,9 @@ export type Stage =
   | { kind: 'call'; label: string; ok: boolean; ms: number; detail?: string; data?: unknown }
   | { kind: 'error'; stage: string; message: string; verdict?: unknown };
 
+/** Where this turn can be read in the gateway's logs, when the ids are configured. */
+export type Trace = { id: string; url?: string };
+
 /** One question and everything that happened because of it. */
 export type Usage = { in: number; out: number };
 export type Turn = {
@@ -15,6 +18,7 @@ export type Turn = {
   answer: string;
   /** One entry per LLM call: the planner, then the writer. Two, always. */
   cost: { role: string; usage: Usage }[];
+  trace?: Trace;
 };
 
 type Status = 'idle' | 'planning' | 'calling' | 'writing';
@@ -75,6 +79,7 @@ export function useAssistant() {
                   },
                 ],
                 cost: event.usage ? [...t.cost, { role: 'planner', usage: event.usage }] : t.cost,
+                trace: event.trace ? { id: event.trace, url: event.traceUrl } : t.trace,
               }));
             } else if (event.type === 'execute') {
               patch((t) => ({
@@ -101,6 +106,7 @@ export function useAssistant() {
             } else if (event.type === 'error') {
               patch((t) => ({
                 ...t,
+                trace: event.trace ? { id: event.trace, url: event.traceUrl } : t.trace,
                 stages: [
                   ...t.stages,
                   {
