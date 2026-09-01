@@ -15,7 +15,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import { useMemo } from 'react';
 import type { Channel, Routing } from '@/lib/workflow-script';
-import { vendorsFor } from '@/lib/workflow-script';
+import { ROLES, vendorsFor } from '@/lib/workflow-script';
 
 /**
  * The graph half of the replay: three zones, hand-placed nodes, and one active edge.
@@ -28,8 +28,16 @@ const CYAN = 'var(--color-brand-blue)';
 const ORANGE = 'var(--color-brand-orange)';
 const GREY = 'var(--color-muted)';
 
-const CARD_W = 190;
-const CARD_H = 46;
+const CARD_W = 208;
+const CARD_H = 48;
+
+const SIDE = {
+  l: Position.Left,
+  r: Position.Right,
+  t: Position.Top,
+  b: Position.Bottom,
+} as const;
+type Side = keyof typeof SIDE;
 
 type CardData = {
   title: string;
@@ -79,8 +87,24 @@ function Card({ data }: NodeProps) {
           ))}
         </span>
       )}
-      <Handle type="target" position={Position.Left} className="!border-0 !bg-transparent" />
-      <Handle type="source" position={Position.Right} className="!border-0 !bg-transparent" />
+      {/* One handle per side, so an edge leaves toward where it is going instead of always
+          setting out to the right and doubling back across a zone. */}
+      {(['l', 'r', 't', 'b'] as const).map((side) => (
+        <span key={side}>
+          <Handle
+            id={side}
+            type="target"
+            position={SIDE[side]}
+            className="!border-0 !bg-transparent"
+          />
+          <Handle
+            id={`${side}s`}
+            type="source"
+            position={SIDE[side]}
+            className="!border-0 !bg-transparent"
+          />
+        </span>
+      ))}
     </div>
   );
 }
@@ -103,8 +127,24 @@ function Zone({ data }: NodeProps) {
   );
 }
 
-function Spoke({ id, sourceX, sourceY, targetX, targetY, data }: EdgeProps) {
-  const [path, labelX, labelY] = getBezierPath({ sourceX, sourceY, targetX, targetY });
+function Spoke({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  data,
+}: EdgeProps) {
+  const [path, labelX, labelY] = getBezierPath({
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+  });
   const d = (data ?? {}) as EdgeData;
   const fail = d.tone === 'fail';
   const color = fail ? 'var(--color-brand-red)' : d.tone === 'live' ? CYAN : 'var(--color-line)';
@@ -147,17 +187,55 @@ function Spoke({ id, sourceX, sourceY, targetX, targetY, data }: EdgeProps) {
 const nodeTypes = { card: Card, zone: Zone };
 const edgeTypes = { spoke: Spoke };
 
-const X = { you: -250, orch: 40, gw: 420, ext: 800 };
+/**
+ * Four columns and one row of servers under the orchestrator.
+ *
+ *   You ──► Orchestrator ─────────►  Portkey gateway
+ *              │  │  │              │        │
+ *              ▼  ▼  ▼         Prisma AIRS   │
+ *             hr  it  policy                 ▼
+ *                                  deepseek     moonshot
+ *                                  (planner)    (writer)
+ *
+ * Two things this shape buys. The MCP fan-out goes DOWN: drawn sideways, three edges left the
+ * orchestrator's right edge, doubled back and crossed the zone they belong to, which is both
+ * ugly and a lie about the shape of the call - down says the true thing, that those three go
+ * at once. And the vendors hang BELOW the gateway rather than beside it, which keeps the
+ * whole picture near the canvas's aspect ratio instead of a letterbox strip with the bottom
+ * two thirds empty.
+ */
+const X = { you: -300, orch: 40, gw: 460 };
+// ext clears the SaaS zone's bottom edge (airs at mcp + its height + padding), or the
+// two dashed boxes overlap and the picture stops meaning anything.
+const Y = { top: 40, mcp: 230, ext: 440 };
+const GAP = 236;
+
+/** Which side each edge leaves from and arrives at, so nothing loops back on itself. */
+const SIDES: Record<string, [Side, Side]> = {
+  'you-orch': ['r', 'l'],
+  'orch-gw': ['r', 'l'],
+  'gw-airs': ['b', 't'],
+};
+
+/** The vendor cards sit under the gateway, so those edges drop rather than reach across. */
+const DOWN_TO_VENDOR = new Set(ROLES.map((r) => `gw-${r.vendor}`));
+
+function sidesFor(id: string): [Side, Side] {
+  if (SIDES[id]) return SIDES[id]!;
+  if (DOWN_TO_VENDOR.has(id)) return ['b', 't'];
+  if (id.startsWith('orch-')) return ['b', 't']; // the MCP fan-out drops straight down
+  return ['r', 'l']; // direct channel: the orchestrator reaches a vendor sideways
+}
 
 /** Every card's home, so the zone boxes can be computed instead of guessed. */
 function placeCards(channel: Channel, routing: Routing, agents: string[]) {
   const cards: { id: string; x: number; y: number; h?: number; data: Omit<CardData, 'tone'> }[] = [
-    { id: 'you', x: X.you, y: 150, data: { title: 'You', accent: GREY } },
+    { id: 'you', x: X.you, y: Y.top + 70, data: { title: 'You', accent: GREY } },
     {
       id: 'orch',
-      x: X.orch,
-      y: 40,
-      h: 66,
+      x: X.orch + GAP,
+      y: Y.top,
+      h: 70,
       data: {
         title: 'Orchestrator',
         tag: 'app',
@@ -166,20 +244,26 @@ function placeCards(channel: Channel, routing: Routing, agents: string[]) {
       },
     },
   ];
+  // Centred under the orchestrator, so the fan is symmetrical however many servers register.
+  const spread = (agents.length - 1) * GAP;
   agents.forEach((name, i) =>
     cards.push({
       id: name,
-      x: X.orch,
-      y: 150 + i * 64,
+      x: X.orch + GAP + i * GAP - spread / 2,
+      y: Y.mcp,
       data: { title: `${name} server`, tag: 'mcp', accent: ORANGE },
     }),
   );
+  // GAP alone leaves the app zone's padded edge touching the SaaS zone's. The gutter is
+  // what keeps two dashed boxes from sharing a border and reading as one region.
+  const rightX = X.orch + GAP + spread / 2 + GAP + 90;
+  const gwX = rightX + GAP / 2;
   if (channel === 'portkey') {
     cards.push({
       id: 'gw',
-      x: X.gw,
-      y: 40,
-      h: 92,
+      x: gwX,
+      y: Y.top,
+      h: 96,
       data: {
         title: 'Portkey gateway',
         tag: 'saas',
@@ -192,9 +276,9 @@ function placeCards(channel: Channel, routing: Routing, agents: string[]) {
     });
     cards.push({
       id: 'airs',
-      x: X.gw,
-      y: 190,
-      h: 92,
+      x: rightX,
+      y: Y.mcp,
+      h: 96,
       data: {
         title: 'Prisma AIRS',
         tag: 'guardrail',
@@ -203,8 +287,15 @@ function placeCards(channel: Channel, routing: Routing, agents: string[]) {
       },
     });
   }
-  vendorsFor(routing).forEach((v, i) =>
-    cards.push({ id: v, x: X.ext, y: 60 + i * 70, data: { title: v, tag: 'vendor', accent: GREY } }),
+  // Under the gateway on `portkey`; beside the orchestrator on `direct`, where there is no
+  // gateway between them and a long drop would draw a hop that does not exist.
+  ROLES.forEach((r, i) =>
+    cards.push({
+      id: r.vendor,
+      x: channel === 'portkey' ? gwX + (i - (ROLES.length - 1) / 2) * GAP : rightX,
+      y: channel === 'portkey' ? Y.ext : Y.top + i * 84,
+      data: { title: r.vendor, tag: r.role, accent: GREY },
+    }),
   );
   return cards;
 }
@@ -212,7 +303,7 @@ function placeCards(channel: Channel, routing: Routing, agents: string[]) {
 function box(
   cards: ReturnType<typeof placeCards>,
   ids: string[],
-  pad = { x: 26, top: 42, bottom: 24 },
+  pad = { x: 30, top: 46, bottom: 26 },
 ) {
   const inside = cards.filter((c) => ids.includes(c.id));
   const minX = Math.min(...inside.map((c) => c.x));
@@ -306,10 +397,13 @@ export function Graph({
     const edges: Edge[] = pairs.map(([s, t]) => {
       const id = `${s}-${t}`;
       const isFail = failed !== undefined && t === failed && live.has(id);
+      const [from, to] = sidesFor(id);
       return {
         id,
         source: s,
         target: t,
+        sourceHandle: `${from}s`,
+        targetHandle: to,
         type: 'spoke',
         data: {
           tone: isFail ? 'fail' : live.has(id) ? 'live' : 'idle',
