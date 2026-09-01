@@ -329,6 +329,19 @@ deliberately corrupted:
 `npm run fallback` prints that table. The middle row is the demo everyone asks for and the
 bottom row is the one that is correct.
 
+**The role's own vendor is the first target.** Without that, the feature quietly deletes
+§4.1: both roles get the same target list in the same order, `PLANNER_VENDOR` and
+`WRITER_VENDOR` stop meaning anything, and nothing looks wrong — the answers keep arriving,
+from the wrong model. A resilience feature is not allowed to change where a request goes when
+nothing has failed. `npm run fallback` prints one row per role for exactly this reason:
+
+| Probe | Served |
+|---|---|
+| healthy · planner | `targets[0]`, deepseek-v4-flash |
+| healthy · writer | `targets[0]`, kimi-k3 |
+
+Both are `targets[0]` because each role gets its own list, its own vendor first.
+
 **The guardrail moves when routing is on.** A request carries one config, so the `pc-` config
 slug that holds the guardrail cannot also hold the routing; each target names the `pg-`
 guardrail slug in `input_guardrails` instead. That is why `PORTKEY_CONFIG` and

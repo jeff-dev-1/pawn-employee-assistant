@@ -68,6 +68,11 @@ const VENDORS: Record<string, Vendor> = {
   },
 };
 
+/** The vendor a role is configured for, exported so scripts can probe each role's path. */
+export function vendorFor(vendorVar: string): Vendor {
+  return vendor(process.env[vendorVar] ?? 'deepseek');
+}
+
 function vendor(name: string): Vendor {
   const found = VENDORS[name];
   if (!found) throw new Error(`Unknown vendor "${name}". Known: ${Object.keys(VENDORS).join(', ')}`);
@@ -93,16 +98,26 @@ const RETRY_ON = [429, 500, 502, 503, 504];
  * list shorter than two, means no config and the single-vendor path below is unchanged -
  * every earlier prompt in the manual keeps working untouched.
  *
+ * THE ROLE'S OWN VENDOR GOES FIRST. Without that line this feature quietly deletes the
+ * planner/writer split: both roles would be handed the same target list in the same order,
+ * PLANNER_VENDOR and WRITER_VENDOR would stop meaning anything, and the difference would be
+ * invisible - the answers keep arriving, from the wrong model. A resilience feature is not
+ * allowed to change where a request goes when nothing has failed.
+ *
  * The guardrail moves when this is on. A config can only be named once, so the `pc-` config
  * slug that carries the guardrail cannot also carry the routing; the guardrail is attached
  * per target by its own `pg-` slug instead. That is why there are two variables.
  */
-function fallbackConfig(guarded: boolean): Record<string, unknown> | undefined {
-  const names = (process.env.FALLBACK_VENDORS ?? '')
+function fallbackConfig(preferred: Vendor, guarded: boolean): Record<string, unknown> | undefined {
+  const listed = (process.env.FALLBACK_VENDORS ?? '')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
-  if (names.length < 2) return undefined;
+  if (listed.length < 2) return undefined;
+  const preferredName = Object.keys(VENDORS).find((k) => VENDORS[k] === preferred);
+  const names = preferredName
+    ? [preferredName, ...listed.filter((n) => n !== preferredName)]
+    : listed;
 
   const guardrail = guarded ? process.env.PORTKEY_GUARDRAIL : undefined;
   const targets = names.map((name) => {
@@ -167,7 +182,7 @@ export function endpoint(target = vendor(process.env.WRITER_VENDOR ?? 'deepseek'
 
   // A fallback config names its own providers and models per target, so the single-vendor
   // headers would be describing a vendor the request may not end up at.
-  const routing = fallbackConfig(guarded);
+  const routing = fallbackConfig(target, guarded);
   if (routing) {
     headers['x-portkey-config'] = JSON.stringify(routing);
     return { url: process.env.PORTKEY_BASE_URL ?? 'https://api.portkey.ai/v1', headers, apiKey };
