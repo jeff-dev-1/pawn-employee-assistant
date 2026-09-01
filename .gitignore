@@ -11,3 +11,6 @@ data/*.sqlite
 *.tsbuildinfo
 apps/web/AGENTS.md
 apps/web/CLAUDE.md
+
+# Playwright MCP scratch output
+.playwright-mcp/
