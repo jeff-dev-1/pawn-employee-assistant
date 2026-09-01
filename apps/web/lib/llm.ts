@@ -30,7 +30,19 @@ function required(name: string): string {
   return value;
 }
 
-type Vendor = { slug: string; baseURL: string; apiKeyVar: string; virtualKeyVar: string };
+type Vendor = {
+  slug: string;
+  baseURL: string;
+  apiKeyVar: string;
+  virtualKeyVar: string;
+  /**
+   * Used only when this vendor is a fallback target, where each target names its own model
+   * and MODEL_WRITER can no longer speak for all of them. Override per vendor with
+   * MODEL_DEEPSEEK / MODEL_MOONSHOT / MODEL_QWEN. deepseek and moonshot are measured; qwen
+   * is the vendor's documented default and nothing here has called it.
+   */
+  model: string;
+};
 
 const VENDORS: Record<string, Vendor> = {
   deepseek: {
@@ -38,18 +50,21 @@ const VENDORS: Record<string, Vendor> = {
     baseURL: 'https://api.deepseek.com/v1',
     apiKeyVar: 'DEEPSEEK_API_KEY',
     virtualKeyVar: 'PORTKEY_VK_DEEPSEEK',
+    model: 'deepseek-chat',
   },
   moonshot: {
     slug: 'moonshot',
     baseURL: 'https://api.moonshot.cn/v1',
     apiKeyVar: 'MOONSHOT_API_KEY',
     virtualKeyVar: 'PORTKEY_VK_MOONSHOT',
+    model: 'kimi-k3',
   },
   qwen: {
     slug: 'dashscope',
     baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
     apiKeyVar: 'DASHSCOPE_API_KEY',
     virtualKeyVar: 'PORTKEY_VK_QWEN',
+    model: 'qwen-plus',
   },
 };
 
@@ -57,6 +72,54 @@ function vendor(name: string): Vendor {
   const found = VENDORS[name];
   if (!found) throw new Error(`Unknown vendor "${name}". Known: ${Object.keys(VENDORS).join(', ')}`);
   return found;
+}
+
+/**
+ * The failures worth trying another vendor for. Everything not on this list is the vendor
+ * answering correctly, and a wrong answer does not get better on a second vendor.
+ *
+ * This list is the entire safety argument for the feature, because of what is NOT on it.
+ * Portkey's default is to fall back on any non-2xx, and a guardrail denial is 446 - so a
+ * fallback config written the obvious way sends the denied request to the next vendor and
+ * serves the answer the guardrail just refused. Portkey documents that as a feature ("blocked
+ * on this provider, try that one"). Here it is a hole: the guardrail is the demo. Naming the
+ * retryable statuses is what closes it, and leaving 401 and 400 off is deliberate too - a bad
+ * key or a malformed request is not transient, and retrying it just bills a second vendor.
+ */
+const RETRY_ON = [429, 500, 502, 503, 504];
+
+/**
+ * FALLBACK_VENDORS, e.g. "deepseek,moonshot": the gateway tries them in order. Unset, or a
+ * list shorter than two, means no config and the single-vendor path below is unchanged -
+ * every earlier prompt in the manual keeps working untouched.
+ *
+ * The guardrail moves when this is on. A config can only be named once, so the `pc-` config
+ * slug that carries the guardrail cannot also carry the routing; the guardrail is attached
+ * per target by its own `pg-` slug instead. That is why there are two variables.
+ */
+function fallbackConfig(guarded: boolean): Record<string, unknown> | undefined {
+  const names = (process.env.FALLBACK_VENDORS ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (names.length < 2) return undefined;
+
+  const guardrail = guarded ? process.env.PORTKEY_GUARDRAIL : undefined;
+  const targets = names.map((name) => {
+    const target = vendor(name);
+    const virtualKey = process.env[target.virtualKeyVar];
+    return {
+      // A virtual key keeps the vendor credential inside the gateway. Without one the key
+      // travels in the config, which is the same key going to the same gateway as the
+      // Authorization header below - no new exposure, but it is a header, so it is logged.
+      ...(virtualKey
+        ? { virtual_key: virtualKey }
+        : { provider: target.slug, api_key: required(target.apiKeyVar) }),
+      override_params: { model: process.env[`MODEL_${name.toUpperCase()}`] ?? target.model },
+      ...(guardrail ? { input_guardrails: [guardrail] } : {}),
+    };
+  });
+  return { strategy: { mode: 'fallback', on_status_codes: RETRY_ON }, targets };
 }
 
 function model(modelVar: string, vendorVar: string, fallbackModel: string, guarded: boolean) {
@@ -101,6 +164,14 @@ export function endpoint(target = vendor(process.env.WRITER_VENDOR ?? 'deepseek'
   const virtualKey = process.env[target.virtualKeyVar] ?? process.env.PORTKEY_VIRTUAL_KEY;
   const headers: Record<string, string> = { 'x-portkey-api-key': required('PORTKEY_API_KEY') };
   let apiKey: string | undefined;
+
+  // A fallback config names its own providers and models per target, so the single-vendor
+  // headers would be describing a vendor the request may not end up at.
+  const routing = fallbackConfig(guarded);
+  if (routing) {
+    headers['x-portkey-config'] = JSON.stringify(routing);
+    return { url: process.env.PORTKEY_BASE_URL ?? 'https://api.portkey.ai/v1', headers, apiKey };
+  }
 
   if (virtualKey) {
     headers['x-portkey-virtual-key'] = virtualKey;

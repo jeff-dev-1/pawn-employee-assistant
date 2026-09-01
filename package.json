@@ -13,6 +13,7 @@
     "test": "npm run test --workspaces --if-present",
     "smoke": "tsx --env-file-if-exists=.env scripts/smoke-all.ts",
     "guardrail": "tsx --env-file-if-exists=.env scripts/check-guardrail.ts",
+    "fallback": "tsx --env-file-if-exists=.env scripts/check-fallback.ts",
     "smoke:stdio": "tsx --env-file-if-exists=.env scripts/smoke-stdio.ts",
     "check-llm": "tsx --env-file-if-exists=.env scripts/check-llm.ts",
     "smoke:hr": "tsx --env-file-if-exists=.env scripts/smoke-mcp.ts"

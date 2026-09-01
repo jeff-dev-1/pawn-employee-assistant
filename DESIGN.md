@@ -296,6 +296,44 @@ channel it selects a virtual key.
 Splitting the roles is not only about cost. It makes **"pick a model for the task"** a thing
 that exists explicitly in the code, instead of one hard-coded model name everywhere.
 
+### 4.1.1 Fallback routing, and the status code that must not be on the list
+
+`FALLBACK_VENDORS=deepseek,moonshot` makes `lib/llm.ts` build a routing config and send it as
+`x-portkey-config`. The gateway tries the vendors in order. Unset, or one vendor, means no
+config is sent and nothing about the earlier prompts changes.
+
+The interesting part is one line:
+
+```ts
+const RETRY_ON = [429, 500, 502, 503, 504];
+```
+
+Portkey's default is to fall back on **any non-2xx**. A guardrail denial is **446**. So a
+fallback config written the obvious way sends a denied request to the next vendor, which has
+no reason to refuse it, and serves the answer the guardrail just blocked. Portkey documents
+this as a feature — "blocked on this provider, try that one" — and for a provider-specific
+content filter that is reasonable. Here the guardrail is the point of appendix B, and routing
+around it turns a control into a suggestion.
+
+Two more codes are missing on purpose. A **401** is a bad key and a **400** is a bad request:
+neither is transient, so retrying bills a second vendor for a request that fails again, and
+hides from the operator the error they need to see. Measured, with the first vendor's key
+deliberately corrupted:
+
+| Probe | Status | Served by |
+|---|---|---|
+| healthy | 200 | `targets[0]`, deepseek |
+| dead vendor, 401 added to the list | 200 | `targets[1]`, moonshot |
+| dead vendor, list as shipped | 401 | `targets[0]`, no second attempt |
+
+`npm run fallback` prints that table. The middle row is the demo everyone asks for and the
+bottom row is the one that is correct.
+
+**The guardrail moves when routing is on.** A request carries one config, so the `pc-` config
+slug that holds the guardrail cannot also hold the routing; each target names the `pg-`
+guardrail slug in `input_guardrails` instead. That is why `PORTKEY_CONFIG` and
+`PORTKEY_GUARDRAIL` are two variables and not one.
+
 ### 4.2 Portkey and Prisma AIRS
 
 Portkey was acquired by Palo Alto Networks in May 2026 and is now the gateway for Prisma AIRS.
