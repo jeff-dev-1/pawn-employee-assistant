@@ -28,5 +28,6 @@ DeepSeek plans, Kimi writes, both through Portkey. **All eight pass.**
 | Three agents answer their own domain | "What is the remote work policy?" → `policy.search_policy` 16ms → the clause, quoted |
 | Types and units | `npm run typecheck` clean; **24 pass and 3 skip** — the skipped three are the pipeline suite, which `describe.skipIf` disables when the MCP servers are not running, exactly as Prompt 7 asks. Start them and it is 27 |
 | Every prompt-N tag runs standalone | **All twelve booted from clean checkouts, 76 checks, 76 pass** — each tag runs the acceptance commands its own PROMPT block carries, re-run after the line cap changed. Reproduce with `bash scripts/verify-tags.sh` |
-| The line cap is met by the rule that is written down | 1 581 of 2 400 on `main`, 1 447 at `prompt-11`, comments and blank lines excluded |
+| The line cap is met by the rule that is written down | 1 761 of 2 400 on `main`, comments and blank lines excluded |
+| The guardrail is demonstrable, not asserted | Three modes in the UI. The same injection prompt: mode 2 gets an empty plan from the planner, mode 3 gets `446` with `action block · category malicious · profile portkey-dc · detected injection` and a trace id |
 | The manual builds the system | Full replay of Prompts 0–11 from `start`; see `docs/REPLAY-FINDINGS.md` |
