@@ -3,8 +3,8 @@
 import { useCallback, useRef, useState } from 'react';
 
 export type Stage =
-  | { kind: 'plan'; tools: string[]; reasoning: string }
-  | { kind: 'call'; label: string; ok: boolean; ms: number; detail?: string }
+  | { kind: 'plan'; tools: string[]; reasoning: string; ms?: number }
+  | { kind: 'call'; label: string; ok: boolean; ms: number; detail?: string; data?: unknown }
   | { kind: 'error'; stage: string; message: string; verdict?: unknown };
 
 /** One question and everything that happened because of it. */
@@ -71,6 +71,7 @@ export function useAssistant() {
                       (c: { server: string; tool: string }) => `${c.server}.${c.tool}`,
                     ),
                     reasoning: event.reasoning ?? '',
+                    ms: event.ms,
                   },
                 ],
                 cost: event.usage ? [...t.cost, { role: 'planner', usage: event.usage }] : t.cost,
@@ -86,6 +87,7 @@ export function useAssistant() {
                     ok: event.ok,
                     ms: event.ms ?? 0,
                     detail: event.error,
+                    data: event.data,
                   },
                 ],
               }));

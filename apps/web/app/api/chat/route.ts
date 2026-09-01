@@ -61,6 +61,7 @@ export async function POST(request: Request) {
           calls: planned.calls,
           reasoning: planned.reasoning,
           usage: planned.usage,
+          ms: planned.ms,
         });
 
         if (planned.calls.length === 0) {
@@ -83,7 +84,9 @@ export async function POST(request: Request) {
             tool: outcome.tool,
             ok: outcome.ok,
             ms: outcome.ms,
-            ...(outcome.ok ? {} : { error: outcome.error }),
+            // What the server actually returned. The trace's job is to show the evidence
+            // the answer was built from; without it the room is trusting the prose.
+            ...(outcome.ok ? { data: outcome.data } : { error: outcome.error }),
           });
         }
 

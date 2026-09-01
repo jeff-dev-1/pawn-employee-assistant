@@ -25,7 +25,7 @@ export const PlanSchema = z.object({
 /** What the plan cost, so the UI can put a number next to stage ①. */
 export type Usage = { in: number; out: number };
 
-export type Plan = z.infer<typeof PlanSchema> & { usage?: Usage };
+export type Plan = z.infer<typeof PlanSchema> & { usage?: Usage; ms?: number };
 
 const EMPTY: Plan = { calls: [], reasoning: 'The planner could not produce a valid plan.' };
 
@@ -69,6 +69,7 @@ export async function plan(
   if (catalog === '') return { calls: [], reasoning: 'No servers are registered.' };
 
   for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const started = Date.now();
     try {
       const { output, usage } = await generateText({
         model,
@@ -76,7 +77,11 @@ export async function plan(
         prompt: prompt(question, catalog, user),
       });
       console.log(`[plan] attempt ${attempt}: ${JSON.stringify(output)}`);
-      return { ...output, usage: { in: usage.inputTokens ?? 0, out: usage.outputTokens ?? 0 } };
+      return {
+        ...output,
+        usage: { in: usage.inputTokens ?? 0, out: usage.outputTokens ?? 0 },
+        ms: Date.now() - started,
+      };
     } catch (error) {
       // A gateway guardrail refusing the call is not a planning failure. Retrying burns a
       // round trip, and reporting it as "I cannot answer that" sends the reader hunting for
