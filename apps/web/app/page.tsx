@@ -1,6 +1,6 @@
 'use client';
 
-import { Sparkles } from 'lucide-react';
+import { Check, Copy as CopyIcon, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Streamdown } from 'streamdown';
 import { Examples, flatten } from '@/components/examples';
@@ -69,17 +69,24 @@ export default function Home() {
                       <span className="h-px flex-1 bg-line" />
                     </p>
                   )}
-                  <p className="mb-4 ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-[var(--primary)] px-4 py-2 text-white shadow-sm">
+                  {/* Quiet, like a chat client. The mode already has the header, the divider
+                      and every accent on the page; a saturated pill on top of that shouts. */}
+                  <p className="mb-5 ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-surface px-4 py-2">
                     {turn.question}
                   </p>
                   <Trace stages={turn.stages} />
+                  {turn.answer && (
+                    <div className="answer">
+                      <Streamdown>{turn.answer}</Streamdown>
+                    </div>
+                  )}
+                  {/* Under the answer, where a reader looks after reading it - not wedged
+                      between the trace and the thing the trace is about. */}
                   {turn.cost.length > 0 && (
-                    <dl className="mb-4 flex flex-wrap gap-x-5 gap-y-1 rounded-lg bg-surface px-3 py-2 font-mono text-[11px] text-muted">
-                      <div>
-                        <dt className="inline text-ink">
-                          {turn.cost.length} LLM call{turn.cost.length === 1 ? '' : 's'}
-                        </dt>
-                      </div>
+                    <dl className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1 font-mono text-[11px] text-muted">
+                      <dt className="text-ink">
+                        {turn.cost.length} LLM call{turn.cost.length === 1 ? '' : 's'}
+                      </dt>
                       {turn.cost.map((c) => (
                         <div key={c.role}>
                           <dt className="inline">{c.role}</dt>{' '}
@@ -92,12 +99,9 @@ export default function Home() {
                           </dd>
                         </div>
                       ))}
+                      <span className="flex-1" />
+                      {turn.answer && <Copy text={turn.answer} />}
                     </dl>
-                  )}
-                  {turn.answer && (
-                    <div className="prose prose-neutral max-w-none rounded-2xl rounded-bl-md border border-line bg-card px-4 py-3 leading-relaxed shadow-sm">
-                      <Streamdown>{turn.answer}</Streamdown>
-                    </div>
                   )}
                   {busy && index === turns.length - 1 && !turn.answer && (
                     <p className="flex items-center gap-2 text-sm text-muted">
@@ -123,5 +127,24 @@ export default function Home() {
         </section>
       </main>
     </div>
+  );
+}
+
+/** Copying the answer is the one action a reader in a demo actually wants. */
+function Copy({ text }: { text: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <button
+      type="button"
+      aria-label="Copy the answer"
+      onClick={() => {
+        void navigator.clipboard.writeText(text);
+        setDone(true);
+        setTimeout(() => setDone(false), 1200);
+      }}
+      className="grid size-7 place-items-center rounded-lg text-muted transition hover:text-ink"
+    >
+      {done ? <Check className="size-3.5" /> : <CopyIcon className="size-3.5" />}
+    </button>
   );
 }

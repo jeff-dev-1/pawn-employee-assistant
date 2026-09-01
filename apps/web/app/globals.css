@@ -88,3 +88,62 @@ body {
     --color-surface: #2a2c2c;
   }
 }
+
+/**
+ * The answer's markdown. Written out rather than pulled in with @tailwindcss/typography:
+ * this is the whole list of elements the writer is allowed to emit, and the plugin is a
+ * dependency and a stylesheet for the ninety we do not use. The `prose` classes that used
+ * to be on this element were inert - the plugin was never installed - so a table arrived
+ * with no border, no radius and no header, which is what sent us looking.
+ */
+.answer {
+  line-height: 1.65;
+}
+.answer > * + * {
+  margin-top: 0.75rem;
+}
+.answer strong {
+  font-weight: 600;
+}
+.answer ul,
+.answer ol {
+  padding-inline-start: 1.25rem;
+  list-style: revert;
+}
+.answer li + li {
+  margin-top: 0.25rem;
+}
+.answer code {
+  border-radius: 0.25rem;
+  background: var(--color-surface);
+  padding: 0.1rem 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+.answer table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 0.75rem;
+  font-size: 0.925em;
+}
+.answer th,
+.answer td {
+  padding: 0.5rem 0.85rem;
+  text-align: start;
+}
+.answer th {
+  /* On the cell, not on thead: with border-collapse separate a thead background does not
+     reliably paint, and Streamdown does not always emit a thead to hang it on. */
+  background: var(--color-surface);
+  font-weight: 600;
+}
+.answer tbody tr + tr td {
+  border-top: 1px solid var(--color-line);
+}
+.answer thead + tbody tr:first-child td {
+  border-top: 1px solid var(--color-line);
+}
