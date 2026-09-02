@@ -41,10 +41,15 @@ export default function Home() {
   return (
     // data-mode retints --primary for everything below it, so the posture is one attribute.
     <div data-mode={mode} className="flex h-dvh flex-col">
-      <header className="flex h-20 shrink-0 items-center justify-between gap-4 border-b border-line bg-card px-5">
+      {/* On a phone the three header blocks want 562px of a 390px viewport. The wordmark and
+          the theme switch are the two that carry nothing the room needs mid-demo, so they are
+          the two that go; the mode switch never does, because it is the demo. */}
+      <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-line bg-card px-3 sm:h-20 sm:gap-4 sm:px-5">
         <span className="flex items-center gap-2.5">
-          <Sparkles className="size-8 text-[var(--primary)] transition-colors" />
-          <span className="text-2xl font-semibold tracking-tight">PAWN Assistant</span>
+          <Sparkles className="size-7 shrink-0 text-[var(--primary)] transition-colors sm:size-8" />
+          <span className="hidden text-2xl font-semibold tracking-tight sm:inline">
+            PAWN Assistant
+          </span>
         </span>
         <ModeSwitch
           mode={mode}
@@ -54,7 +59,9 @@ export default function Home() {
           }}
         />
         {/* Balances the brand so the switcher sits centred. Nothing lives here yet. */}
-        <ThemeSwitch theme={theme} onChange={setTheme} />
+        <span className="hidden sm:flex sm:w-52 sm:justify-end">
+          <ThemeSwitch theme={theme} onChange={setTheme} />
+        </span>
       </header>
 
       <main className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden md:grid-cols-[320px_1fr]">

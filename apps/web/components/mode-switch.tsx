@@ -40,7 +40,7 @@ const TINT: Record<Mode, string> = {
 /** Icon only, in a pill. The label is a tooltip - three shields read faster than three lines. */
 export function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => void }) {
   return (
-    <nav className="flex gap-1 rounded-2xl bg-surface p-1.5">
+    <nav className="flex shrink-0 gap-1 rounded-2xl bg-surface p-1 sm:p-1.5">
       {MODES.map((m) => {
         const active = mode === m.id;
         return (
@@ -53,7 +53,7 @@ export function ModeSwitch({ mode, onChange }: { mode: Mode; onChange: (m: Mode)
             title={m.label}
             style={{ '--tint': TINT[m.id] } as React.CSSProperties}
             className={cn(
-              'grid size-11 place-items-center rounded-xl border transition',
+              'grid size-9 place-items-center rounded-xl border transition sm:size-11',
               active
                 ? 'border-[var(--tint)] bg-card text-[var(--tint)] shadow-sm'
                 : 'border-transparent text-muted hover:border-[var(--tint)]/40 hover:text-[var(--tint)]',
