@@ -453,7 +453,9 @@ export function Graph({
       panOnDrag
       zoomOnScroll={false}
       preventScrolling={false}
-      minZoom={0.4}
+      // 0.4 was chosen on a laptop and silently clamps fitView on a phone: 390px has to
+      // hold 1290px of graph, which needs about 0.27, so two nodes stayed off screen.
+      minZoom={0.15}
     />
   );
 }

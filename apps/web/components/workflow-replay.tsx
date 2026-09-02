@@ -70,8 +70,8 @@ export function WorkflowReplay({
 
   return (
     <div className="fixed inset-0 z-100 flex flex-col bg-bg">
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-line px-5">
-        <h2 className="text-xl font-semibold tracking-tight">Workflow replay</h2>
+      <header className="flex h-14 shrink-0 items-center justify-between border-b border-line px-4 sm:h-16 sm:px-5">
+        <h2 className="text-lg font-semibold tracking-tight sm:text-xl">Workflow replay</h2>
         <button
           type="button"
           onClick={onClose}
@@ -82,14 +82,16 @@ export function WorkflowReplay({
         </button>
       </header>
 
-      <div className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-2 border-b border-line px-5 py-2.5">
+      {/* One scrolling row on a phone instead of three stacked ones: the switches are the
+          control surface, and 128px of a 844px screen spent on them is the graph's budget. */}
+      <div className="flex shrink-0 items-center gap-x-4 gap-y-2 overflow-x-auto border-b border-line px-4 py-2 sm:flex-wrap sm:gap-x-6 sm:px-5 sm:py-2.5">
         <Switch
           options={MODES.map((m) => ({ id: m.id, label: m.label.replace(/ (usage|mode)$/, '') }))}
           value={mode}
           onChange={(v) => onMode(v as Mode)}
         />
-        <span className="ms-auto flex items-center gap-2">
-          <span className="font-mono text-[10px] tracking-widest text-muted uppercase">
+        <span className="flex shrink-0 items-center gap-2 sm:ms-auto">
+          <span className="hidden font-mono text-[10px] tracking-widest text-muted uppercase sm:inline">
             LLM_PROVIDER
           </span>
           <Switch
@@ -101,9 +103,9 @@ export function WorkflowReplay({
             onChange={(v) => setChannel(v as Channel)}
           />
         </span>
-        <span className="flex items-center gap-2">
+        <span className="flex shrink-0 items-center gap-2">
           <span
-            className="font-mono text-[10px] tracking-widest text-muted uppercase"
+            className="hidden font-mono text-[10px] tracking-widest text-muted uppercase sm:inline"
             title={
               channel === 'direct'
                 ? 'Only the gateway can fall back. On direct the SDK talks to one vendor.'
@@ -134,7 +136,9 @@ export function WorkflowReplay({
         />
 
         {/* The narration. Without it the packets are pretty and mean nothing. */}
-        <aside className="pointer-events-none absolute top-4 right-4 w-96 max-w-[calc(100%-2rem)] rounded-2xl border border-line bg-card p-4 shadow-lg">
+        {/* Floating over the graph is fine at 1440px and covers a third of it at 390px, so on a
+            phone the narration sits under the graph where it can be read without hiding it. */}
+        <aside className="pointer-events-none absolute inset-x-3 bottom-24 rounded-2xl border border-line bg-card/95 p-3 shadow-lg backdrop-blur sm:inset-x-auto sm:top-4 sm:right-4 sm:bottom-auto sm:w-96 sm:max-w-[calc(100%-2rem)] sm:p-4">
           <p className="flex items-center gap-2 font-semibold">
             <span
               className={cn(
@@ -158,7 +162,7 @@ export function WorkflowReplay({
           )}
         </aside>
 
-        <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded-2xl border border-line bg-card px-4 py-2.5 shadow-lg">
+        <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-line bg-card px-3 py-2 shadow-lg sm:bottom-5 sm:gap-3 sm:px-4 sm:py-2.5">
           <Key label="Restart" onClick={() => (setAt(0), setPlaying(true))} icon={RotateCcw} />
           <Key label="Previous" onClick={() => setAt((i) => Math.max(i - 1, 0))} icon={ChevronLeft} />
           <button
@@ -174,13 +178,13 @@ export function WorkflowReplay({
             onClick={() => setAt((i) => Math.min(i + 1, script.length - 1))}
             icon={ChevronRight}
           />
-          <span className="h-1.5 w-56 overflow-hidden rounded-full bg-surface">
+          <span className="hidden h-1.5 w-56 overflow-hidden rounded-full bg-surface sm:block">
             <span
               className="block h-full rounded-full bg-[var(--primary)] transition-all"
               style={{ width: `${((at + 1) / script.length) * 100}%` }}
             />
           </span>
-          <span className="w-12 text-end font-mono text-xs text-muted">
+          <span className="w-11 text-end font-mono text-xs text-muted">
             {at + 1}/{script.length}
           </span>
         </div>
