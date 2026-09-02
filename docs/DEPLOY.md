@@ -21,10 +21,22 @@ From a laptop with the repository checked out:
 ```bash
 ssh root@$HOST 'mkdir -p /data/pawn-employee-assistant'
 git archive main | ssh root@$HOST 'tar -x -C /data/pawn-employee-assistant'
+git rev-parse main | ssh root@$HOST 'cat > /data/pawn-employee-assistant/DEPLOYED'
 ssh root@$HOST 'cd /data/pawn-employee-assistant && cp -n .env.example .env && docker compose up -d --build'
 ```
 
 `git archive` sends the tracked tree only — no `node_modules`, no `.git`, about 700 KB.
+
+The third line is worth the three seconds. Because `.git` is not sent, **nothing on the node
+can tell you which commit is running** — `git rev-parse HEAD` there reports
+`bad default revision 'HEAD'`, and the files look plausible whatever their age. That was not
+hypothetical: a deployment sat for 39 hours serving code from before a day of changes, with
+an `.env` that had been given new variables the running code did not read. Write the sha down
+and `cat DEPLOYED` answers the question in one command:
+
+```bash
+ssh root@$HOST 'cat /data/pawn-employee-assistant/DEPLOYED'   # compare with `git rev-parse main`
+```
 
 ## Fill in the key
 
