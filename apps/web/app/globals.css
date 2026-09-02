@@ -77,8 +77,16 @@ body {
   background: var(--color-muted);
 }
 
+/**
+ * Dark, in three places because there are three states.
+ *
+ * `system` sets no data-theme, so the media query decides - but it must not fire when the
+ * reader has explicitly asked for light, hence the :not() guard. `light` and `dark` are the
+ * explicit choices and win in both directions. Defining the palette only inside the media
+ * query is the bug this replaces: the toggle changed an attribute nothing was listening to.
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     color-scheme: dark;
     --color-bg: #1a1c1c;
     --color-card: #222424;
@@ -87,6 +95,20 @@ body {
     --color-line: #3a3c3c;
     --color-surface: #2a2c2c;
   }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg: #1a1c1c;
+  --color-card: #222424;
+  --color-ink: #f0f0ec;
+  --color-muted: #a0aab0;
+  --color-line: #3a3c3c;
+  --color-surface: #2a2c2c;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
 }
 
 /**
