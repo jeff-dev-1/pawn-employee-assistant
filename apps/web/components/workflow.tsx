@@ -49,7 +49,19 @@ type CardData = {
   icon: LucideIcon;
 };
 type ZoneData = { label: string; color: string };
-type EdgeData = { tone: 'idle' | 'live' | 'fail'; note?: string };
+type EdgeData = {
+  tone: 'idle' | 'live' | 'fail';
+  note?: string;
+  /**
+   * An inline check the gateway performs before forwarding, not a hop it can route to.
+   * Drawn differently because the first version drew the guardrail as a sibling of the
+   * vendors hanging off the gateway, and a reader asked - reasonably - whether the
+   * guardrail chooses between the model and the MCP servers. It does not: it returns
+   * allow or deny on one outbound model call, and the MCP leg never reaches the gateway
+   * at all.
+   */
+  inline?: boolean;
+};
 
 function Card({ data }: NodeProps) {
   const d = data as unknown as CardData;
@@ -153,6 +165,7 @@ function Spoke({
   const d = (data ?? {}) as EdgeData;
   const fail = d.tone === 'fail';
   const color = fail ? 'var(--color-brand-red)' : d.tone === 'live' ? CYAN : 'var(--color-line)';
+  const dash = fail ? '6 5' : d.inline ? '2 4' : undefined;
   return (
     <>
       <BaseEdge
@@ -161,7 +174,7 @@ function Spoke({
         style={{
           stroke: color,
           strokeWidth: d.tone === 'idle' ? 1 : 2.5,
-          strokeDasharray: fail ? '6 5' : undefined,
+          strokeDasharray: dash,
         }}
       />
       {d.tone === 'live' && (
@@ -291,7 +304,8 @@ function placeCards(channel: Channel, routing: Routing, agents: string[]) {
       data: {
         title: 'Prisma AIRS',
         icon: ShieldCheck,
-        tag: 'guardrail',
+        // "hook", not "guardrail": the tag says what it IS to the gateway, not what it does.
+        tag: 'inline hook',
         pills: ['injection', 'toxicity', 'dlp', 'url', 'code', 'redaction'],
         accent: CYAN,
       },
@@ -408,6 +422,7 @@ export function Graph({
       const id = `${s}-${t}`;
       const isFail = failed !== undefined && t === failed && live.has(id);
       const [from, to] = sidesFor(id);
+      const inline = id === 'gw-airs';
       return {
         id,
         source: s,
@@ -417,7 +432,8 @@ export function Graph({
         type: 'spoke',
         data: {
           tone: isFail ? 'fail' : live.has(id) ? 'live' : 'idle',
-          note: isFail ? 'failover' : undefined,
+          note: isFail ? 'failover' : inline ? 'inline check' : undefined,
+          inline,
         } satisfies EdgeData,
       };
     });

@@ -99,7 +99,10 @@ export function buildScript(mode: Mode, channel: Channel, routing: Routing): Ste
           focus: 'airs',
           title: 'Guardrail inspects the prompt',
           kind: 'GUARDRAIL',
-          body: 'Before the vendor is called, not after it answers.',
+          body:
+            'An inline check inside the gateway, not a destination it routes to. It answers ' +
+            'allow or deny on this one outbound model call - it never chooses between the ' +
+            'model and the MCP servers.',
         });
         out.push({
           edge: 'gw-airs',
