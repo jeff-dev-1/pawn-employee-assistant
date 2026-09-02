@@ -282,8 +282,60 @@ Three things that are easy to get wrong:
   of that expiry; anything else is forgeable by whoever holds it.
 
 **A gate is not a spend limit.** A shared code stops crawlers and strangers; it does not stop
-the twenty people who have it. The control that bounds the bill is a budget cap on the
-gateway key itself, and it is a separate task from any of this.
+the twenty people who have it. The control that bounds the bill is a cap on the gateway key
+itself, and it is a separate task from any of this.
+
+## The spend cap, which is the only control that bounds the bill
+
+Four layers end up in front of a public demo, and only the last one is about money:
+
+| Layer | Stops |
+|---|---|
+| The login gate | Crawlers and strangers |
+| nginx `limit_req` (5 r/s, burst 10) | Scripts |
+| Gateway key rate limit (200 requests/day) | Sustained abuse |
+| **Gateway key budget** | **The bill** |
+
+200 requests/day is about 100 exchanges — two model calls each — which is twenty people
+asking five questions. Past that the key refuses, and the demo is down rather than expensive.
+
+Make a **second key** for the public deployment, never the one on your laptop, so revoking it
+costs you nothing. On the key: a rate limit, a cost budget, an alert threshold below it, and
+a monthly reset so the key does not die permanently the first time a crawler finds you.
+
+**Leave the key's Config field empty.** Binding the guardrail config to the credential is the
+safer posture in production and is appendix D — but this demo's whole point is that modes 2
+and 3 differ by whether `x-portkey-config` is sent, and a config bound to the key is sent on
+every request. Mode 2 and mode 3 then behave identically and appendix B has nothing to show.
+The guardrail is not weakened by this: protected mode still sends the config and still gets a
+446. Note that "allow config override" does not rescue it either, because mode 2 sends *no*
+header, and no header means the key's default applies.
+
+Two things the form will not tell you:
+
+- **A budget cannot be edited after the key is created.** Changing it means duplicating the
+  key. Decide the number once; do not set a small one to test the flow.
+- `Validation failed: undefined: Invalid value` on create is a **field** problem, not a
+  permission problem — most often a periodic-reset option whose date field is still empty.
+  Turn the budget block off, create, and add it back to find which field it is.
+
+Swapping the key is three commands and one verification, and the verification is the point:
+
+```bash
+cp .env .env.bak-key-$(date +%m%d-%H%M)
+sed -i 's|^PORTKEY_API_KEY=.*|PORTKEY_API_KEY=<new>|' .env
+docker compose up -d web        # the MCP servers do not read this variable
+```
+
+Then ask one question in each of the three modes through the public URL and compare against
+what they did before. A key swap that quietly changes behaviour — a config bound to the new
+credential, a permission the old key had — looks exactly like a key swap that worked:
+
+```
+mode 1 normal     plan: [hr.find_employee]     an answer
+mode 2 risky      plan: []                     the planner refuses
+mode 3 protected  guardrail                    detected: [injection]
+```
 
 ## SSE will not survive a default proxy
 
