@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Copy as CopyIcon, ExternalLink, Sparkles } from 'lucide-react';
+import { Check, Copy as CopyIcon, ExternalLink, Monitor, Moon, Sparkles, Sun } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Streamdown } from 'streamdown';
 import { Examples, flatten } from '@/components/examples';
@@ -20,6 +20,18 @@ export default function Home() {
   const { ask, reset, turns, status, busy } = useAssistant();
   const modeLabel = MODES.find((m) => m.id === mode)?.label ?? '';
   const end = useRef<HTMLDivElement>(null);
+  const [theme, setTheme] = useState<Theme>('system');
+
+  // Restoring before first paint would need a blocking script tag in <head>; one frame of
+  // the system theme is the cheaper trade for a demo.
+  useEffect(() => {
+    const saved = localStorage.getItem('pawn-theme') as Theme | null;
+    if (saved) setTheme(saved);
+  }, []);
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('pawn-theme', theme);
+  }, [theme]);
 
   // Follow the stream. Without this the answer writes itself off the bottom of the screen.
   useEffect(() => {
@@ -42,7 +54,7 @@ export default function Home() {
           }}
         />
         {/* Balances the brand so the switcher sits centred. Nothing lives here yet. */}
-        <span className="hidden w-52 sm:block" />
+        <ThemeSwitch theme={theme} onChange={setTheme} />
       </header>
 
       <main className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden md:grid-cols-[320px_1fr]">
@@ -51,11 +63,17 @@ export default function Home() {
         <section className="flex min-h-0 flex-col">
           <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8">
             <div className="mx-auto max-w-3xl">
+              {/* An empty transcript is the first thing a room sees. A line of grey text
+                  says nothing; the mark and a greeting say what this is and who it thinks
+                  you are - and DEMO_USER is the honest answer to the second half. */}
               {turns.length === 0 && (
-                <p className="text-muted">
-                  One question, routed across HR, IT and company policy, answered from real
-                  records.
-                </p>
+                <div className="grid place-items-center gap-5 py-16 text-center">
+                  <Sparkles className="size-16 text-[var(--primary)] opacity-90" />
+                  <p className="max-w-md text-muted">
+                    One question, routed across HR, IT and company policy, answered from real
+                    records. Ask below, or pick one from the left.
+                  </p>
+                </div>
               )}
 
               {/* The transcript. Each turn keeps its own trace, so two questions can be
@@ -160,5 +178,36 @@ function Copy({ text }: { text: string }) {
     >
       {done ? <Check className="size-3.5" /> : <CopyIcon className="size-3.5" />}
     </button>
+  );
+}
+
+export type Theme = 'system' | 'light' | 'dark';
+const THEMES: { id: Theme; icon: typeof Sun; label: string }[] = [
+  { id: 'system', icon: Monitor, label: 'System' },
+  { id: 'light', icon: Sun, label: 'Light' },
+  { id: 'dark', icon: Moon, label: 'Dark' },
+];
+
+/** Three states, not a toggle: "follow the system" is a real choice and the default. */
+function ThemeSwitch({ theme, onChange }: { theme: Theme; onChange: (t: Theme) => void }) {
+  return (
+    <span className="flex w-52 justify-end gap-1">
+      {THEMES.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          onClick={() => onChange(t.id)}
+          aria-pressed={theme === t.id}
+          title={t.label}
+          className={
+            theme === t.id
+              ? 'grid size-9 place-items-center rounded-xl border border-[var(--primary)] text-[var(--primary)]'
+              : 'grid size-9 place-items-center rounded-xl border border-transparent text-muted transition hover:text-ink'
+          }
+        >
+          <t.icon className="size-4" />
+        </button>
+      ))}
+    </span>
   );
 }

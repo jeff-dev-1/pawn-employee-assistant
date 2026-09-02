@@ -18,7 +18,10 @@ export function PromptInput({
 
   function submit(question: string) {
     if (busy || question.trim() === '') return;
-    setValue(question);
+    // Clear, do not echo. Setting the box to what was just asked was written for the
+    // suggestion cards and reads as "your question was not accepted" for a typed one -
+    // the question is already in the transcript a line above.
+    setValue('');
     onSubmit(question);
   }
 
@@ -52,11 +55,7 @@ export function PromptInput({
           placeholder="Type your message here…"
           className="w-full bg-transparent px-1 py-1.5 outline-none placeholder:text-muted"
         />
-        <div className="mt-2 flex items-center justify-between gap-3">
-          {/* The route this question will take, named before it is asked. */}
-          <span className="truncate font-mono text-[11px] text-muted">
-            planner → 3 MCP servers → writer
-          </span>
+        <div className="mt-2 flex items-center justify-end gap-3">
           <button
             type="submit"
             disabled={busy || value.trim() === ''}
