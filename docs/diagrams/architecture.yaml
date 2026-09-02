@@ -8,6 +8,8 @@ metadata:
   project: pawn-employee-assistant
   architecture_level: container
   reference_project: demo-local-ai-hr-it-bot
+  child_diagrams:
+    - docs/diagrams/architecture-orchestrator.yaml
 zones:
   - id: web-tier
     label: apps/web · single Next.js 16 process
@@ -34,7 +36,7 @@ nodes:
     zone: mcp-tier
   - id: it-server
     label: IT Server :3102
-    sublabel: tickets.sqlite
+    sublabel: tickets.csv
     type: agent
     zone: mcp-tier
   - id: policy-server

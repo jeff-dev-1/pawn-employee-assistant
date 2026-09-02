@@ -1,0 +1,146 @@
+kind: DiagramSpec
+version: v1
+type: architecture
+title: Orchestrator Component View
+subtitle: One question, three stages, exactly two model calls · the registry is the only thing that knows the agents' names
+direction: left-to-right
+metadata:
+  project: pawn-employee-assistant
+  architecture_level: component
+  revision: f55fe2d
+  parent_diagram: docs/diagrams/architecture.yaml
+  source_refs:
+    - {path: apps/web/lib/orchestrator/plan.ts, role: source}
+    - {path: apps/web/lib/orchestrator/execute.ts, role: source}
+    - {path: apps/web/lib/orchestrator/synthesize.ts, role: source}
+    - {path: apps/web/lib/registry.ts, role: source}
+    - {path: apps/web/lib/llm.ts, role: source}
+    - {path: servers/hr/src/config.ts, role: config}
+    - {path: servers/it/src/config.ts, role: config}
+    - {path: servers/policy/src/config.ts, role: config}
+zones:
+  - id: mcp-tier
+    label: servers/ · Streamable HTTP · no LLM inside
+    type: plane
+nodes:
+  - id: browser
+    label: Employee Browser
+    sublabel: app/page.tsx · SSE, every stage visible
+    type: user
+  - id: plan
+    label: "① plan.ts"
+    sublabel: one LLM call · schema-constrained · empty calls means refuse
+    type: process
+    focal: true
+  - id: execute
+    label: "② execute.ts"
+    sublabel: zero LLM calls · Promise.allSettled
+    type: process
+  - id: synthesize
+    label: "③ synthesize.ts"
+    sublabel: one LLM call · composes the single answer
+    type: process
+  - id: registry
+    label: registry.ts
+    sublabel: tool catalog · heartbeat freshness
+    type: store
+  - id: llm
+    label: lib/llm.ts
+    sublabel: the only model exit · planner + writer roles
+    type: gateway
+    focal: true
+  - id: hr
+    label: HR Server
+    sublabel: data/employees.csv
+    type: agent
+    zone: mcp-tier
+  - id: it
+    label: IT Server
+    sublabel: data/tickets.csv
+    type: agent
+    zone: mcp-tier
+  - id: policy
+    label: Policy Server
+    sublabel: data/policies/
+    type: agent
+    zone: mcp-tier
+edges:
+  - id: e1
+    from: browser
+    to: plan
+    label: question
+    type: request
+  - id: e2
+    from: registry
+    to: plan
+    label: catalog
+    type: data
+    style: dashed
+  - id: e3
+    from: plan
+    to: execute
+    label: "calls[]"
+    type: control
+  - id: e4
+    from: execute
+    to: hr
+    type: request
+  - id: e5
+    from: execute
+    to: it
+    label: tools/call
+    type: request
+  - id: e6
+    from: execute
+    to: policy
+    type: request
+    to_port: top
+  - id: e7
+    from: hr
+    to: synthesize
+    type: data
+  - id: e8
+    from: it
+    to: synthesize
+    label: results
+    type: data
+  - id: e9
+    from: policy
+    to: synthesize
+    type: data
+  - id: e10
+    from: synthesize
+    to: browser
+    label: answer
+    type: return
+    style: dashed
+  - id: e11
+    from: plan
+    to: llm
+    label: route
+    type: data
+  - id: e12
+    from: synthesize
+    to: llm
+    label: write
+    type: writeback
+    style: dashed
+    from_port: bottom
+annotations:
+  - id: a1
+    text: One unreachable server degrades the answer, it does not fail the request. A stale agent stays in the catalog on purpose.
+    target: execute
+    type: constraint
+  - id: a2
+    text: Each server POSTs its own tool list on a heartbeat. Nothing under apps/web hard-codes hr, it or policy.
+    target: registry
+    type: note
+  - id: a3
+    text: A tool that finds nothing returns a structured not_found, never a natural-language apology.
+    target: policy
+    type: constraint
+layout:
+  horizontal_gap: 200
+  vertical_gap: 48
+style:
+  profile: default

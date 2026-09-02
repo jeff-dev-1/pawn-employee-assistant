@@ -58,7 +58,7 @@
 <rect x="320" y="500" width="160" height="72" rx="6" fill="#F7F5F0" stroke="#25272D" stroke-width="1"/>
 <text x="332" y="518" fill="#25272D" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">AGENT</text>
 <text data-node-label="it-server" x="400" y="542" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">IT Server :3102</text>
-<text data-node-sublabel="it-server" x="400" y="558" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">tickets.sqlite</text>
+<text data-node-sublabel="it-server" x="400" y="558" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">tickets.csv</text>
 </g>
 <g id="node-policy-server" data-node-id="policy-server">
 <rect x="584" y="500" width="160" height="72" rx="6" fill="#F7F5F0"/>

@@ -209,3 +209,133 @@ Each MCP server tells the orchestrator where to reach it. Inside a container `lo
 that container, so the advertised address must come from configuration:
 `ADVERTISE_URL=http://hr:3000/mcp` names the compose service. Without it the orchestrator
 registers an address it can never dial, and the failure looks like a working registration.
+
+---
+
+# Putting it on a public URL
+
+The demo runs on a lab node behind a VPN. A public link needs a machine with a real address —
+but not one that runs the application. `$LAB` is the node with the stack; `$EDGE` is a small
+public host that already terminates TLS for something else.
+
+## Reverse tunnel, not a second deployment
+
+The first instinct is to deploy the stack onto the public host. Measure before you do:
+two full stacks are about **735 MiB** at runtime, which fits almost anywhere, but
+`next build` on a 2-core / 1.8 GB box **with no swap** is what actually kills you, and the
+images are ~950 MB each so shipping them over a laptop is not the answer either.
+
+So put nothing on the edge. The lab node opens a reverse tunnel and nginx proxies into it:
+
+```
+$LAB:3010  ──reverse ssh──▶  $EDGE 127.0.0.1:18081  ──nginx──▶  https://demo.example.com
+```
+
+The three MCP servers and the gateway key never leave the lab network; the edge sees one
+HTTP port. On the lab node:
+
+```ini
+# /etc/systemd/system/pawn-tunnel.service
+ExecStart=/usr/bin/ssh -NT -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 \
+  -i /root/.ssh/tunnel_key -R 127.0.0.1:18081:localhost:3010 root@$EDGE
+Restart=always
+```
+
+**The tunnel key is restricted, and that is why your second tunnel fails.** A key issued for
+one forward carries `permitlisten` for exactly that port:
+
+```
+restrict,port-forwarding,permitlisten="127.0.0.1:18080" ssh-ed25519 AAAA... tunnel
+```
+
+`ExitOnForwardFailure=yes` then makes ssh exit, systemd restarts it, and `systemctl is-active`
+says `activating` forever while the port never binds. The log line to look for is
+`Remote: port forwarding refused`. Add the new port to that key's options — never widen it to
+unrestricted forwarding.
+
+## The gate
+
+A public URL for this demo means anyone can spend the gateway key, and the demo's whole
+premise is *"try to inject me"*, so abuse is the expected case rather than the accident.
+Four modes, one symlink, switched by `pawn-auth-mode`:
+
+| Mode | What it is | When |
+|---|---|---|
+| `form` | A login page we serve, HMAC-signed cookie | Default. A designed page instead of the browser's dialog |
+| `basic` | HTTP basic auth | The classroom fallback: one command, thirty seconds |
+| `sso` | oauth2-proxy → an OIDC provider | Long-running instances, when you want identity |
+| `open` | No gate | Only once the key itself has a spend cap |
+
+The switch does `nginx -t` before reloading and rolls back if it fails — on a demo day the
+one unacceptable outcome is a gate change that takes the site down. `sso` additionally
+refuses to activate when its client id is unset or its service is not running, because both
+of those are discovered at the worst possible moment otherwise.
+
+Three things that are easy to get wrong:
+
+- **Keep `/.well-known/acme-challenge/` outside the gate.** It lives in the port-80 server
+  block; if the gate reaches it, renewal fails silently and you find out in ninety days.
+- **Validate the post-login redirect.** `?rd=https://evil.example/` turns a login page into an
+  open redirect: the link shows your domain and lands somewhere else. Accept relative paths
+  only, and reject `//host` as well as absolute URLs.
+- **Sign the cookie, do not store the secret in it.** The cookie holds an expiry plus an HMAC
+  of that expiry; anything else is forgeable by whoever holds it.
+
+**A gate is not a spend limit.** A shared code stops crawlers and strangers; it does not stop
+the twenty people who have it. The control that bounds the bill is a budget cap on the
+gateway key itself, and it is a separate task from any of this.
+
+## SSE will not survive a default proxy
+
+```nginx
+location / {
+    proxy_pass http://127.0.0.1:18081;
+    proxy_read_timeout 300s;   # the writer streams for longer than the 60s default
+    proxy_buffering    off;    # or the whole answer arrives at once, looking like a hang
+    proxy_cache        off;
+}
+```
+
+Without those two lines the demo looks broken in the way that is hardest to diagnose: it
+works, eventually, all at once.
+
+## Which commit is actually running
+
+`git archive` deliberately omits `.git`, so `git rev-parse HEAD` on the node reports
+`bad default revision 'HEAD'` and stale files look exactly like fresh ones. Stamp it:
+
+```bash
+git rev-parse main | ssh root@$LAB 'cat > /data/pawn-employee-assistant/DEPLOYED'
+ssh root@$LAB 'cat /data/pawn-employee-assistant/DEPLOYED'   # compare with git rev-parse main
+```
+
+A deployment once served code from 39 hours earlier while its `.env` had been given three new
+variables the running code did not read. Nothing looked wrong.
+
+## Two stacks side by side
+
+`container_name` is hard-coded in `docker-compose.yml`, so `-p` alone is not enough — the
+second stack collides on names, not on ports. An override file fixes both:
+
+```yaml
+# docker-compose.override.yml, in the second checkout
+services:
+  web:    { container_name: pawn-demo-web }
+  hr:     { container_name: pawn-demo-hr }
+  it:     { container_name: pawn-demo-it }
+  policy: { container_name: pawn-demo-policy }
+```
+
+with `WEB_PORT`/`HR_PORT`/`IT_PORT`/`POLICY_PORT` moved in that checkout's `.env`, started as
+`docker compose -p pawn-demo up -d --build`.
+
+## Before a cohort
+
+- `cat DEPLOYED` on every node, compare with `git rev-parse`.
+- One real question end to end **through the public URL**, and read the time to first token.
+  A slow vendor is indistinguishable from a broken proxy until you time it: one writer took
+  24.6 s to first byte and 4.9 s after switching vendors, with no configuration change on the
+  edge at all.
+- If the gate is `sso` and the provider mails a code: **have five people log in within the
+  same minute.** Hosted senders are rate-limited and corporate mail gateways filter bulk
+  one-time codes. This failure only appears with an audience — a single test always arrives.

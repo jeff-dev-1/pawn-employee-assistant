@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1712 776" width="1712" height="776" role="img" aria-labelledby="diagram-title diagram-desc">
+<title id="diagram-title">Orchestrator Component View</title>
+<desc id="diagram-desc">One question, three stages, exactly two model calls · the registry is the only thing that knows the agents&#x27; names</desc>
+<defs>
+  <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse" overflow="visible"><path d="M0 0 L9 4 L0 8 Z" fill="#596273"/></marker>
+  <marker id="arrow-accent" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse" overflow="visible"><path d="M0 0 L9 4 L0 8 Z" fill="#B5523A"/></marker>
+  <marker id="arrow-link" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse" overflow="visible"><path d="M0 0 L9 4 L0 8 Z" fill="#315F91"/></marker>
+  <marker id="arrow-soft" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse" overflow="visible"><path d="M0 0 L9 4 L0 8 Z" fill="#7E8795"/></marker>
+</defs>
+<rect width="1712" height="776" fill="#F7F5F0"/>
+<text x="48" y="52" fill="#25272D" font-family="Georgia, &#x27;Times New Roman&#x27;, serif" font-size="28">Orchestrator Component View</text>
+<text x="48" y="80" fill="#596273" font-family="Inter, Helvetica, Arial, sans-serif" font-size="12">One question, three stages, exactly two model calls · the registry is the only thing that knows the agents&#x27; names</text>
+<rect data-zone-id="mcp-tier" x="1116" y="124" width="200" height="368" rx="8" fill="#EEEAE2" fill-opacity="0.42" stroke="#D7D2C8" stroke-width="1" stroke-dasharray="4 4"/>
+<rect x="1128" y="118" width="310" height="16" rx="2" fill="#F7F5F0"/>
+<text x="1136" y="129" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.1em">SERVERS/ · STREAMABLE HTTP · NO LLM INSIDE</text>
+<path id="edge-e1" data-edge-id="e1" d="M 216 264 L 308 264 Q 316 264 316 272 L 316 296 Q 316 304 324 304 L 416 304" fill="none" stroke="#315F91" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-link)"/>
+<path id="edge-e2" data-edge-id="e2" d="M 216 380 L 234 380 A 6 6 0 0 1 246 380 L 308 380 Q 316 380 316 372 L 316 340 Q 316 332 324 332 L 416 332" fill="none" stroke="#B5523A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 4" marker-end="url(#arrow-accent)"/>
+<path id="edge-e3" data-edge-id="e3" d="M 576 304 L 668 304 Q 676 304 676 296 L 676 260 Q 676 252 684 252 L 776 252" fill="none" stroke="#596273" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path id="edge-e4" data-edge-id="e4" d="M 936 232 L 1028 232 Q 1036 232 1036 224 L 1036 204 Q 1036 196 1044 196 L 1136 196" fill="none" stroke="#315F91" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-link)"/>
+<path id="edge-e5" data-edge-id="e5" d="M 936 252 L 1028 252 Q 1036 252 1036 260 L 1036 308 Q 1036 316 1044 316 L 1136 316" fill="none" stroke="#315F91" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-link)"/>
+<path id="edge-e6" data-edge-id="e6" d="M 936 272 L 1030 272 A 6 6 0 0 1 1042 272 L 1068 272 Q 1076 272 1076 280 L 1076 310 A 6 6 0 0 0 1076 322 L 1076 368 Q 1076 376 1084 376 L 1208 376 Q 1216 376 1216 384 L 1216 400" fill="none" stroke="#315F91" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-link)"/>
+<path id="edge-e7" data-edge-id="e7" d="M 1296 196 L 1388 196 Q 1396 196 1396 204 L 1396 284 Q 1396 292 1404 292 L 1496 292" fill="none" stroke="#B5523A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-accent)"/>
+<path id="edge-e8" data-edge-id="e8" d="M 1296 316 L 1392 316 Q 1396 316 1396 320 L 1396 322 Q 1396 324 1398 324 L 1496 324" fill="none" stroke="#B5523A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-accent)"/>
+<path id="edge-e9" data-edge-id="e9" d="M 1296 436 L 1388 436 Q 1396 436 1396 428 L 1396 348 Q 1396 340 1404 340 L 1496 340" fill="none" stroke="#B5523A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-accent)"/>
+<path id="edge-e10" data-edge-id="e10" d="M 1496 308 L 1480 308 Q 1472 308 1472 316 L 1472 318 A 6 6 0 0 0 1472 330 L 1472 334 A 6 6 0 0 0 1472 346 L 1472 544 Q 1472 552 1464 552 L 248 552 Q 240 552 240 544 L 240 270 A 6 6 0 0 1 240 258 L 240 248 Q 240 240 232 240 L 216 240" fill="none" stroke="#596273" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+<path id="edge-e11" data-edge-id="e11" d="M 576 332 L 668 332 Q 676 332 676 340 L 676 372 Q 676 380 684 380 L 776 380" fill="none" stroke="#B5523A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow-accent)"/>
+<path id="edge-e12" data-edge-id="e12" d="M 1576 356 L 1576 362 Q 1576 368 1570 368 L 1478 368 A 6 6 0 0 0 1466 368 L 1402 368 A 6 6 0 0 0 1390 368 L 966 368 Q 960 368 960 374 L 960 377 Q 960 380 957 380 L 936 380" fill="none" stroke="#7E8795" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 4" marker-end="url(#arrow-soft)"/>
+<rect data-label-for="e1" x="336" y="276" width="64" height="16" rx="2" fill="#F7F5F0"/>
+<text x="368" y="287" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" text-anchor="middle" letter-spacing="0.05em">QUESTION</text>
+<rect data-label-for="e2" x="340" y="304" width="56" height="16" rx="2" fill="#F7F5F0"/>
+<text x="368" y="315" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" text-anchor="middle" letter-spacing="0.05em">CATALOG</text>
+<rect data-label-for="e3" x="596" y="276" width="56" height="16" rx="2" fill="#F7F5F0"/>
+<text x="624" y="287" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" text-anchor="middle" letter-spacing="0.05em">CALLS[]</text>
+<rect data-label-for="e5" x="948" y="276" width="76" height="16" rx="2" fill="#F7F5F0"/>
+<text x="986" y="287" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" text-anchor="middle" letter-spacing="0.05em">TOOLS/CALL</text>
+<rect data-label-for="e8" x="1316" y="288" width="56" height="16" rx="2" fill="#F7F5F0"/>
+<text x="1344" y="299" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" text-anchor="middle" letter-spacing="0.05em">RESULTS</text>
+<rect data-label-for="e10" x="830" y="524" width="52" height="16" rx="2" fill="#F7F5F0"/>
+<text x="856" y="535" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" text-anchor="middle" letter-spacing="0.05em">ANSWER</text>
+<rect data-label-for="e11" x="600" y="304" width="48" height="16" rx="2" fill="#F7F5F0"/>
+<text x="624" y="315" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" text-anchor="middle" letter-spacing="0.05em">ROUTE</text>
+<rect data-label-for="e12" x="1244" y="380" width="48" height="16" rx="2" fill="#F7F5F0"/>
+<text x="1268" y="391" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" text-anchor="middle" letter-spacing="0.05em">WRITE</text>
+<g id="node-browser" data-node-id="browser">
+<rect x="56" y="212" width="160" height="80" rx="6" fill="#F7F5F0"/>
+<rect x="56" y="212" width="160" height="80" rx="6" fill="#F7F5F0" stroke="#7E8795" stroke-width="1"/>
+<text x="68" y="230" fill="#7E8795" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">USER</text>
+<text data-node-label="browser" x="136" y="252" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Employee Browser</text>
+<text data-node-sublabel="browser" x="136" y="268" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">app/page.tsx · SSE, every</text>
+<text data-node-sublabel="browser" x="136" y="280" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">stage visible</text>
+</g>
+<g id="node-plan" data-node-id="plan">
+<rect x="416" y="272" width="160" height="92" rx="6" fill="#F7F5F0"/>
+<rect x="416" y="272" width="160" height="92" rx="6" fill="#F4E7E1" stroke="#B5523A" stroke-width="1"/>
+<text x="428" y="290" fill="#B5523A" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">PROCESS</text>
+<text data-node-label="plan" x="496" y="312" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">① plan.ts</text>
+<text data-node-sublabel="plan" x="496" y="328" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">one LLM call · schema-</text>
+<text data-node-sublabel="plan" x="496" y="340" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">constrained · empty calls</text>
+<text data-node-sublabel="plan" x="496" y="352" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">means refuse</text>
+</g>
+<g id="node-execute" data-node-id="execute">
+<rect x="776" y="212" width="160" height="80" rx="6" fill="#F7F5F0"/>
+<rect x="776" y="212" width="160" height="80" rx="6" fill="#F7F5F0" stroke="#25272D" stroke-width="1"/>
+<text x="788" y="230" fill="#25272D" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">PROCESS</text>
+<text data-node-label="execute" x="856" y="252" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">② execute.ts</text>
+<text data-node-sublabel="execute" x="856" y="268" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">zero LLM calls ·</text>
+<text data-node-sublabel="execute" x="856" y="280" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">Promise.allSettled</text>
+</g>
+<g id="node-synthesize" data-node-id="synthesize">
+<rect x="1496" y="276" width="160" height="80" rx="6" fill="#F7F5F0"/>
+<rect x="1496" y="276" width="160" height="80" rx="6" fill="#F7F5F0" stroke="#25272D" stroke-width="1"/>
+<text x="1508" y="294" fill="#25272D" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">PROCESS</text>
+<text data-node-label="synthesize" x="1576" y="316" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">③ synthesize.ts</text>
+<text data-node-sublabel="synthesize" x="1576" y="332" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">one LLM call · composes</text>
+<text data-node-sublabel="synthesize" x="1576" y="344" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">the single answer</text>
+</g>
+<g id="node-registry" data-node-id="registry">
+<rect x="56" y="340" width="160" height="80" rx="6" fill="#F7F5F0"/>
+<rect x="56" y="340" width="160" height="80" rx="6" fill="#EEEAE2" stroke="#596273" stroke-width="1"/>
+<text x="68" y="358" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">STORE</text>
+<text data-node-label="registry" x="136" y="380" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">registry.ts</text>
+<text data-node-sublabel="registry" x="136" y="396" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">tool catalog · heartbeat</text>
+<text data-node-sublabel="registry" x="136" y="408" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">freshness</text>
+</g>
+<g id="node-llm" data-node-id="llm">
+<rect x="776" y="340" width="160" height="80" rx="6" fill="#F7F5F0"/>
+<rect x="776" y="340" width="160" height="80" rx="6" fill="#F4E7E1" stroke="#B5523A" stroke-width="1"/>
+<text x="788" y="358" fill="#B5523A" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">GATEWAY</text>
+<text data-node-label="llm" x="856" y="380" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">lib/llm.ts</text>
+<text data-node-sublabel="llm" x="856" y="396" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">the only model exit ·</text>
+<text data-node-sublabel="llm" x="856" y="408" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">planner + writer roles</text>
+</g>
+<g id="node-hr" data-node-id="hr">
+<rect x="1136" y="160" width="160" height="72" rx="6" fill="#F7F5F0"/>
+<rect x="1136" y="160" width="160" height="72" rx="6" fill="#F7F5F0" stroke="#25272D" stroke-width="1"/>
+<text x="1148" y="178" fill="#25272D" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">AGENT</text>
+<text data-node-label="hr" x="1216" y="202" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">HR Server</text>
+<text data-node-sublabel="hr" x="1216" y="218" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">data/employees.csv</text>
+</g>
+<g id="node-it" data-node-id="it">
+<rect x="1136" y="280" width="160" height="72" rx="6" fill="#F7F5F0"/>
+<rect x="1136" y="280" width="160" height="72" rx="6" fill="#F7F5F0" stroke="#25272D" stroke-width="1"/>
+<text x="1148" y="298" fill="#25272D" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">AGENT</text>
+<text data-node-label="it" x="1216" y="322" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">IT Server</text>
+<text data-node-sublabel="it" x="1216" y="338" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">data/tickets.csv</text>
+</g>
+<g id="node-policy" data-node-id="policy">
+<rect x="1136" y="400" width="160" height="72" rx="6" fill="#F7F5F0"/>
+<rect x="1136" y="400" width="160" height="72" rx="6" fill="#F7F5F0" stroke="#25272D" stroke-width="1"/>
+<text x="1148" y="418" fill="#25272D" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">AGENT</text>
+<text data-node-label="policy" x="1216" y="442" fill="#25272D" font-family="Inter, Helvetica, Arial, sans-serif" font-size="13" font-weight="600" text-anchor="middle">Policy Server</text>
+<text data-node-sublabel="policy" x="1216" y="458" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9" text-anchor="middle">data/policies/</text>
+</g>
+<g id="annotation-a1" data-annotation-id="a1">
+<rect x="48" y="580" width="800" height="76" rx="4" fill="#EEEAE2" stroke="#D7D2C8"/>
+<path d="M 48 580 V 656" stroke="#B5523A" stroke-width="3"/>
+<text x="60" y="596" fill="#B5523A" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">CONSTRAINT · execute</text>
+<text x="60" y="616" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9">One unreachable server degrades the answer, it does not fail the request. A stale agent stays in the catalog on purpose.</text>
+</g>
+<g id="annotation-a2" data-annotation-id="a2">
+<rect x="864" y="580" width="800" height="76" rx="4" fill="#EEEAE2" stroke="#D7D2C8"/>
+<path d="M 864 580 V 656" stroke="#B5523A" stroke-width="3"/>
+<text x="876" y="596" fill="#B5523A" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">NOTE · registry</text>
+<text x="876" y="616" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9">Each server POSTs its own tool list on a heartbeat. Nothing under apps/web hard-codes hr, it or policy.</text>
+</g>
+<g id="annotation-a3" data-annotation-id="a3">
+<rect x="48" y="668" width="800" height="76" rx="4" fill="#EEEAE2" stroke="#D7D2C8"/>
+<path d="M 48 668 V 744" stroke="#B5523A" stroke-width="3"/>
+<text x="60" y="684" fill="#B5523A" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="8" letter-spacing="0.08em">CONSTRAINT · policy</text>
+<text x="60" y="704" fill="#596273" font-family="&#x27;SFMono-Regular&#x27;, Consolas, &#x27;Liberation Mono&#x27;, monospace" font-size="9">A tool that finds nothing returns a structured not_found, never a natural-language apology.</text>
+</g>
+</svg>
