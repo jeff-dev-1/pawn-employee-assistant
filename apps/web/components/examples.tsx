@@ -64,9 +64,9 @@ function Card({
   return (
     <button
       type="button"
-      title={item.text}
+      title={t(item.text)}
       disabled={busy}
-      onClick={() => onPick(item.text)}
+      onClick={() => onPick(t(item.text))}
       className="flex w-full items-center gap-3 rounded-xl border border-line bg-card px-3.5 py-3 text-start transition hover:border-[var(--primary)]/40 hover:bg-[var(--primary)]/5 disabled:opacity-40"
     >
       {index === undefined ? (

@@ -45,6 +45,10 @@ RULES
 - Select every tool needed. A question spanning two domains produces two or more calls.
 - Use server and tool names exactly as written above. Invent nothing.
 - Fill in the arguments. Empty arguments are almost always a mistake.
+- ARGUMENTS ARE ALWAYS ENGLISH, whatever language the question is in. They are lookup keys
+  against English records - a name, a ticket id, a search term - so a translated argument
+  searches an English corpus for a word that is not in it and returns nothing. The question
+  may be in any language; what you send to the tools is not.
 - Always answer with the full plan object. Every call goes inside the "calls" array, even
   when there is only one. A bare call object is not a plan.
 

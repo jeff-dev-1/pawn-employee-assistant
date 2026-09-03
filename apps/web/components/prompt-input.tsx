@@ -32,14 +32,14 @@ export function PromptInput({
       <div className="mb-3 flex flex-wrap gap-2 md:hidden">
         {suggestions.map((suggestion) => (
           <button
-            key={suggestion.title}
+            key={t(suggestion.title)}
             type="button"
-            title={suggestion.text}
-            onClick={() => submit(suggestion.text)}
+            title={t(suggestion.text)}
+            onClick={() => submit(t(suggestion.text))}
             disabled={busy}
             className="rounded-full border border-line bg-card px-3 py-1 text-xs text-muted transition hover:border-[var(--primary)] hover:text-[var(--primary)] disabled:opacity-40"
           >
-            {suggestion.title}
+            {t(suggestion.title)}
           </button>
         ))}
       </div>
