@@ -89,7 +89,7 @@ export default function Home() {
 
 
       <main className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden md:grid-cols-[320px_1fr]">
-        <Examples mode={mode} busy={busy} onPick={(q) => ask(q, mode)} />
+        <Examples mode={mode} busy={busy} onPick={(q) => ask(q, mode, lang)} />
 
         <section className="flex min-h-0 flex-col">
           <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8">
@@ -179,7 +179,7 @@ export default function Home() {
           <div className="shrink-0 px-6 pb-6">
             <div className="mx-auto max-w-3xl">
               <PromptInput
-                onSubmit={(q) => ask(q, mode)}
+                onSubmit={(q) => ask(q, mode, lang)}
                 busy={busy}
                 suggestions={flatten(EXAMPLES[mode])}
               />

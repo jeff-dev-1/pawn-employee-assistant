@@ -2,7 +2,18 @@ import { streamText } from 'ai';
 import { writer } from '../llm';
 import type { CallOutcome } from './execute';
 
-function brief(question: string, outcomes: CallOutcome[]): string {
+/**
+ * The language the answer is written in. The records are English either way - a translated
+ * answer is a translation of an English record, and saying so is the honest version - but
+ * that is a reason to name the source language, not a reason to answer in a language the
+ * reader did not ask for.
+ */
+const LANGUAGE: Record<string, string> = {
+  en: 'English',
+  'zh-Hant': 'Traditional Chinese (繁體中文)',
+};
+
+function brief(question: string, outcomes: CallOutcome[], lang: string): string {
   const succeeded = outcomes.filter((o) => o.ok);
   const failed = outcomes.filter((o) => !o.ok);
 
@@ -23,7 +34,9 @@ function brief(question: string, outcomes: CallOutcome[]): string {
 RETRIEVED DATA
 ${retrieved}${missing}
 
-Write the answer in English, as markdown.
+Write the answer in ${LANGUAGE[lang] ?? 'English'}, as markdown. The retrieved data is in
+English; translate your prose, never the identifiers inside it - names, ticket ids, email
+addresses and tool names stay exactly as the records spell them.
 Use only the retrieved data. Add nothing you happen to know.
 Lead with the answer itself in one sentence.
 When the retrieved data holds two or more values a reader would compare - a leave total
@@ -36,6 +49,11 @@ If nothing was retrieved, say you cannot answer and do not speculate.`;
 }
 
 /** One streaming LLM call. Returns the token stream so the route can forward it. */
-export function synthesize(question: string, outcomes: CallOutcome[], model = writer()) {
-  return streamText({ model, prompt: brief(question, outcomes) });
+export function synthesize(
+  question: string,
+  outcomes: CallOutcome[],
+  model = writer(),
+  lang = 'en',
+) {
+  return streamText({ model, prompt: brief(question, outcomes, lang) });
 }

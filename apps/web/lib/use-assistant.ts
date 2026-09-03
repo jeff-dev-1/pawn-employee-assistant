@@ -35,7 +35,7 @@ export function useAssistant() {
   }, []);
 
   const ask = useCallback(
-    async (question: string, mode = 'normal') => {
+    async (question: string, mode = 'normal', lang = 'en') => {
       if (running.current || question.trim() === '') return;
       running.current = true;
       setTurns((all) => [...all, { question, stages: [], answer: '', cost: [] }]);
@@ -45,7 +45,7 @@ export function useAssistant() {
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question, mode }),
+          body: JSON.stringify({ question, mode, lang }),
         });
         const reader = response.body?.getReader();
         if (!reader) return;

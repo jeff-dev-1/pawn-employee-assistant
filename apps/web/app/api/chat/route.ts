@@ -32,7 +32,11 @@ function airsVerdict(body: unknown): unknown {
 }
 
 export async function POST(request: Request) {
-  const { question, mode } = (await request.json()) as { question?: string; mode?: string };
+  const { question, mode, lang } = (await request.json()) as {
+    question?: string;
+    mode?: string;
+    lang?: string;
+  };
   // One variable separates the three modes: whether the guardrail config travels with the
   // model call. Nothing else here, and nothing at all in servers/, knows the difference.
   const guarded = mode === 'protected';
@@ -97,7 +101,7 @@ export async function POST(request: Request) {
 
         // Stage 3: synthesize. One streaming LLM call. Consume the FULL stream, not
         // textStream: textStream drops `error` parts and an failing writer looks like silence.
-        const result = synthesize(question, outcomes, writer(guarded, traceId));
+        const result = synthesize(question, outcomes, writer(guarded, traceId), lang);
         let emitted = 0;
         for await (const part of result.stream) {
           if (part.type === 'text-delta') {
