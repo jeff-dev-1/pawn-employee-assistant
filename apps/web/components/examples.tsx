@@ -2,6 +2,7 @@
 
 import { Lightbulb } from 'lucide-react';
 import { EXAMPLES, isGroup, type Example, type Group, type Mode } from '@/components/mode-switch';
+import { useI18n } from '@/lib/i18n';
 
 /**
  * The left column. Short titles on the cards, the question itself sent on click - a card that
@@ -17,22 +18,23 @@ export function Examples({
   busy: boolean;
   onPick: (question: string) => void;
 }) {
+  const { t } = useI18n();
   return (
     <aside className="hidden overflow-y-auto border-e border-line bg-card p-5 md:block">
-      <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold">
-        <Lightbulb className="size-5 text-[var(--primary)]" />
-        Example questions
+      <h2 className="mb-4 flex items-center gap-2.5 text-[15px] font-semibold">
+        <Lightbulb className="size-[22px] text-[var(--primary)]" />
+        {t('examples.title')}
       </h2>
       <div className="space-y-3">
         {EXAMPLES[mode].map((item) =>
           isGroup(item) ? (
             <div key={item.title}>
-              <div className="mb-1 flex items-center gap-2 py-1 text-sm font-semibold">
-                <item.icon className="size-5 shrink-0 text-[var(--primary)]" />
-                {item.title}
+              <div className="mb-1.5 flex items-center gap-2.5 py-1 text-[15px] font-semibold">
+                <item.icon className="size-[22px] shrink-0 text-[var(--primary)]" />
+                {t(item.title)}
               </div>
               {/* A sequence, numbered, because the second turn only works after the first. */}
-              <div className="space-y-1.5 border-s-2 border-[var(--primary)]/40 ps-4">
+              <div className="space-y-2 border-s-2 border-[var(--primary)]/40 ps-4">
                 {item.steps.map((step, i) => (
                   <Card key={step.title} item={step} index={i + 1} busy={busy} onPick={onPick} />
                 ))}
@@ -58,22 +60,23 @@ function Card({
   busy: boolean;
   onPick: (question: string) => void;
 }) {
+  const { t } = useI18n();
   return (
     <button
       type="button"
       title={item.text}
       disabled={busy}
       onClick={() => onPick(item.text)}
-      className="flex w-full items-start gap-2.5 rounded-lg border border-line bg-card p-2.5 text-start transition hover:border-[var(--primary)]/40 hover:bg-[var(--primary)]/5 disabled:opacity-40"
+      className="flex w-full items-center gap-3 rounded-xl border border-line bg-card px-3.5 py-3 text-start transition hover:border-[var(--primary)]/40 hover:bg-[var(--primary)]/5 disabled:opacity-40"
     >
       {index === undefined ? (
-        <item.icon className="mt-0.5 size-4 shrink-0 text-[var(--primary)]" />
+        <item.icon className="size-[18px] shrink-0 text-[var(--primary)]" />
       ) : (
-        <span className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-[var(--primary)]/15 text-[10px] font-semibold text-[var(--primary)]">
+        <span className="grid size-5 shrink-0 place-items-center rounded-full bg-[var(--primary)]/15 text-[11px] font-semibold text-[var(--primary)]">
           {index}
         </span>
       )}
-      <span className="text-sm leading-snug font-medium">{item.title}</span>
+      <span className="text-[15px] leading-snug font-semibold">{t(item.title)}</span>
     </button>
   );
 }

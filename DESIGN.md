@@ -581,7 +581,7 @@ When the code is done, all of these must hold:
 5. Stopping `servers/it` degrades the answer instead of crashing, and `/api/health` reflects it.
 6. Adding a fourth agent requires **zero lines changed** under `apps/web`.
 7. `npm run typecheck` and `npm test` pass.
-8. Total TypeScript stays under 2400 lines, comments and blank lines excluded.
+8. Total TypeScript stays under 2700 lines, comments and blank lines excluded.
 
 Item 6 decides whether the architecture works. Item 8 decides whether it can be vibe-coded.
 

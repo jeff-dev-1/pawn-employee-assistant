@@ -3,6 +3,7 @@
 import { AlertTriangle, Brain, Check, ChevronDown, ChevronUp, Wrench, X } from 'lucide-react';
 import { useState } from 'react';
 import type { Stage } from '@/lib/use-assistant';
+import { useI18n } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 
 /**
@@ -20,6 +21,7 @@ import { cn } from '@/lib/utils';
  */
 export function Trace({ stages }: { stages: Stage[] }) {
   const [open, setOpen] = useState(true);
+  const { t } = useI18n();
   if (stages.length === 0) return null;
 
   const failures = stages.filter((s) => s.kind === 'error');
@@ -32,9 +34,9 @@ export function Trace({ stages }: { stages: Stage[] }) {
         className="flex w-full items-center gap-2 rounded-lg py-1 text-sm text-muted transition hover:text-ink"
       >
         <Brain className="size-4 shrink-0" />
-        <span>{open ? 'Hide' : 'View'} chain of thought</span>
+        <span>{open ? t('trace.hide') : t('trace.show')}</span>
         {!open && failures.length > 0 && (
-          <span className="text-[var(--color-brand-red)]">· {failures.length} blocked</span>
+          <span className="text-[var(--color-brand-red)]">· {failures.length} {t('trace.blocked')}</span>
         )}
         <span className="flex-1" />
         {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
@@ -43,7 +45,7 @@ export function Trace({ stages }: { stages: Stage[] }) {
       {open && (
         <ol className="mt-1 space-y-3 text-sm">
           {stages.map((stage, index) => (
-            <li key={index}>{render(stage)}</li>
+            <li key={index}>{render(stage, t)}</li>
           ))}
         </ol>
       )}
@@ -51,19 +53,19 @@ export function Trace({ stages }: { stages: Stage[] }) {
   );
 }
 
-function render(stage: Stage) {
+function render(stage: Stage, t: (k: Parameters<ReturnType<typeof useI18n>['t']>[0]) => string) {
   if (stage.kind === 'plan') {
     return (
-      <Phase icon={Brain} title="Reason" ms={stage.ms}>
+      <Phase icon={Brain} title={t('trace.reason')} ms={stage.ms}>
         <p>
           {stage.tools.length === 0
-            ? 'No tool in the catalog can answer this.'
+            ? t('trace.noTool')
             : (stage.reasoning ?? '')}
         </p>
         {stage.tools.length > 0 && (
           <p className="mt-1.5 italic">
-            → Next: call {stage.tools.join(', ')}
-            {stage.tools.length > 1 && ' — at once, not in sequence'}
+            → {t('trace.next')} {stage.tools.join(', ')}
+            {stage.tools.length > 1 && ` ${t('trace.atOnce')}`}
           </p>
         )}
       </Phase>
@@ -125,6 +127,7 @@ function Phase({
 /** One MCP call. Collapsed it is a status line; opened it is the record the answer came from. */
 function ToolCard({ stage }: { stage: Extract<Stage, { kind: 'call' }> }) {
   const [open, setOpen] = useState(false);
+  const { t } = useI18n();
   const body = stage.ok ? stage.data : stage.detail;
   return (
     <>
@@ -147,7 +150,7 @@ function ToolCard({ stage }: { stage: Extract<Stage, { kind: 'call' }> }) {
             )}
           >
             {stage.ok ? <Check className="size-3.5" /> : <X className="size-3.5" />}
-            {stage.ok ? 'Completed' : 'Failed'}
+            {stage.ok ? t('trace.completed') : t('trace.failed')}
           </span>
           <span className="font-mono text-xs text-muted">{stage.ms} ms</span>
           <span className="flex-1" />

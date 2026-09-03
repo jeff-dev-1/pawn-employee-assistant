@@ -21,7 +21,9 @@ for t in prompt-0 prompt-1; do
   echo "== $t"; setup_tree $t || { fail boot "worktree"; continue; }
   check "files exist"        test -f CLAUDE.md -a -f DESIGN.md -a -f WORKFLOW.md
   check "prohibition 1"      bash -c '[ "$(grep -c "No MCP server may call an LLM" CLAUDE.md)" = 1 ]'
-  check "2400-line cap"      bash -c '[ "$(grep -c "Hard cap of 2400 lines" CLAUDE.md)" = 1 ]'
+  # The number lives in the tag's own CLAUDE.md, not here: this check runs against twelve
+  # trees, and hard-coding today's cap turns the whole lineage red the next time it moves.
+  check "the cap is stated"  bash -c 'grep -qE "Hard cap of [0-9]+ lines" CLAUDE.md'
   check "mapping table"      bash -c 'grep -q "find_employee" DESIGN.md && grep -q "search_policy" DESIGN.md'
   if [ "$t" = prompt-1 ]; then
     check "PRD cross-domain"   grep -q "Who is my manager" docs/PRD.md
@@ -215,7 +217,9 @@ if boot "$SP/tagcheck/prompt-11.log" http://localhost:3101/health http://localho
   check "policy health"  bash -c 'curl -s -m 5 localhost:3103/health | grep -q policy'
   check "npm run smoke across every agent" npm run smoke
   n=$(cat $(git -C . ls-files '*.ts' '*.tsx') | grep -vcE '^[[:space:]]*(//|/\*|\*|$)')
-  [ "$n" -lt 2400 ] && pass "under the 2400-line cap" "$n" || fail "under the 2400-line cap" "$n"
+  limit=$(grep -oE "Hard cap of [0-9]+" CLAUDE.md | grep -oE "[0-9]+")
+  limit=${limit:-2400}
+  [ "$n" -lt "$limit" ] && pass "under the ${limit}-line cap" "$n" || fail "under the ${limit}-line cap" "$n"
 else fail "all four processes boot" "timed out"; fi
 stop_stack; teardown_tree
 

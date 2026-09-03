@@ -3,6 +3,7 @@
 import { ArrowUp, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import type { Example } from '@/components/mode-switch';
+import { useI18n } from '@/lib/i18n';
 
 export function PromptInput({
   onSubmit,
@@ -15,6 +16,7 @@ export function PromptInput({
   suggestions: Example[];
 }) {
   const [value, setValue] = useState('');
+  const { t } = useI18n();
 
   function submit(question: string) {
     if (busy || question.trim() === '') return;
@@ -52,7 +54,7 @@ export function PromptInput({
         <input
           value={value}
           onChange={(event) => setValue(event.target.value)}
-          placeholder="Type your message here…"
+          placeholder={t('input.placeholder')}
           className="w-full bg-transparent px-1 py-1.5 outline-none placeholder:text-muted"
         />
         <div className="mt-2 flex items-center justify-end gap-3">
@@ -60,7 +62,7 @@ export function PromptInput({
             type="submit"
             disabled={busy || value.trim() === ''}
             className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--primary)] text-white transition disabled:opacity-25"
-            aria-label="Ask"
+            aria-label={t('input.send')}
           >
             {busy ? <Loader2 className="size-4 animate-spin" /> : <ArrowUp className="size-4" />}
           </button>

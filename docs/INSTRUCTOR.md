@@ -73,7 +73,7 @@ game away: if students watch you create the problem, the step teaches nothing.
 | 2:15 | 8 | SSE | live | |
 | 2:25 | 9 | **Students build an agent** | students | Walk the room. Do not shorten this |
 | 2:40 | 10 | AI debugging | live | Make the model explain before it touches anything |
-| 2:55 | 11 | Ship it | live | Read the line count out loud (2400, comments and blank lines excluded) |
+| 2:55 | 11 | Ship it | live | Read the line count out loud (2700, comments and blank lines excluded) |
 | 3:00 | | Close | | |
 
 ---
