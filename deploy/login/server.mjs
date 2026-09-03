@@ -1,14 +1,17 @@
-// pawn.imilos.com 的表单登录闸门。
+// The form sign-in gate that sits in front of a public deployment.
 //
-// 存在的理由：HTTP basic auth 的对话框是浏览器 chrome 的一部分，服务端只能发一个
-// WWW-Authenticate 头，改不了样式。要一个设计过的登录页就必须换机制。
+// Why it exists: HTTP basic auth cannot be styled. The server sends a WWW-Authenticate
+// header and the browser draws the dialog; there is no hook for a logo, a colour, or a line
+// saying where the code came from. A designed page needs a different mechanism.
 //
-// 三个端点，nginx 通过 auth_request 使用 /auth：
-//   GET  /login  设计过的表单
-//   POST /login  校验口令，签一个 HMAC cookie，跳回来路
-//   GET  /auth   cookie 有效返回 202，否则 401（nginx 据此放行或跳转）
+// Four endpoints. nginx calls /auth per request through auth_request:
+//   GET  /auth    202 when the cookie is valid, 401 otherwise
+//   GET  /login   the page
+//   POST /login   checks the code, signs a cookie, redirects back
+//   GET  /logout  clears both cookies
 //
-// cookie 是 HMAC 签名的过期时间戳，不是"把口令存进 cookie"——后者任何人都能伪造。
+// The cookie holds an expiry and an HMAC OF that expiry - never the code itself, which
+// whoever holds the cookie could otherwise forge.
 import { createServer } from 'node:http';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -24,7 +27,7 @@ const mint = () => {
   return exp + '.' + sign(exp);
 };
 
-/** 定长比较，避免用比较耗时泄漏签名。 */
+/** Constant-time compare, so the comparison itself does not leak the signature. */
 function same(a, b) {
   const x = Buffer.from(a), y = Buffer.from(b);
   return x.length === y.length && timingSafeEqual(x, y);
@@ -41,7 +44,7 @@ function valid(cookie) {
 const esc = (s) =>
   String(s).replace(/[<>"&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '"': '&quot;', '&': '&amp;' })[c]);
 
-/** 应用里那颗 sparkle，内联成 SVG——登录页和落地页应该是同一个东西。 */
+/** The app's own sparkle, inlined: the sign-in page and what it opens are one product. */
 const MARK = `<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor"
 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 <path d="M9.9 2.5 7.7 7.7 2.5 9.9l5.2 2.2 2.2 5.2 2.2-5.2 5.2-2.2-5.2-2.2Z"/>
@@ -191,7 +194,8 @@ createServer((req, res) => {
     });
     return req.on('end', () => {
       const f = new URLSearchParams(body);
-      // 只接受站内相对路径，否则登录页会变成一个开放重定向。
+      // Relative paths only, or the sign-in page becomes an open redirect: the link shows
+      // your domain and lands somewhere else.
       const raw = f.get('rd') || '/';
       const rd = raw.startsWith('/') && !raw.startsWith('//') ? raw : '/';
       if (!same(f.get('password') ?? '', PASSWORD)) {
