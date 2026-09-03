@@ -114,7 +114,6 @@ export type ExampleKey =
   | 'ex.security'
   | 'ex.equipment'
   | 'ex.crossDomain'
-  | 'ex.manager'
   | 'ex.systemPrompt'
   | 'ex.impersonation'
   | 'ex.learnName'
