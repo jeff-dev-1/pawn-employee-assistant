@@ -70,7 +70,11 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  /* An explicit colour, not `transparent`. The transcript scrolls in an inner container,
+     and every element between it and <body> is transparent too - so a transparent track
+     showed the canvas behind the page, which in dark mode is a white strip down the side of
+     the one panel a demo audience is reading. */
+  background: var(--color-bg);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--color-line);
