@@ -51,6 +51,9 @@ html {
   /* The reference runs at 115%. A demo is read from the back row, not from a laptop. */
   font-size: 112.5%;
   font-family: var(--font-sans);
+  /* On html as well as body: the scrollbar gutter is painted from the root element, so a
+     background set only on body leaves a white strip down the right edge in dark mode. */
+  background: var(--color-bg);
 }
 
 body {
