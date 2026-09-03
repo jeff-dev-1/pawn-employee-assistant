@@ -131,7 +131,16 @@ export function WorkflowReplay({
         </span>
       </div>
 
-      <div className="relative min-h-0 flex-1">
+      {/* On a phone fitView scales the graph to the WIDTH - 0.236 for 390px - which leaves a
+          123px-tall drawing centred in a 727px box, i.e. 300px of nothing above it and the
+          narration covering part of what is below. Capping the graph's height hands that
+          space back and lets the narration sit under the picture instead of over it. */}
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        {/* fitView scales to the WIDTH, so on a 390px phone the drawing is 123px tall inside
+            whatever box it is given - 300px of emptiness above and below if that box is the
+            whole screen. Give it a share of the height on a phone and stack the narration
+            under it; on a desktop the box is wide enough that the graph fills it. */}
+        <div className="relative min-h-0 flex-1 max-sm:flex-[0_0_42%]">
         <GraphProvider
           channel={channel}
           routing={effective}
@@ -139,11 +148,12 @@ export function WorkflowReplay({
           activeEdge={step?.edge}
           failed={step?.tone === 'fail' && step.kind === 'LLM' ? step.focus : undefined}
         />
+        </div>
 
         {/* The narration. Without it the packets are pretty and mean nothing. */}
         {/* Floating over the graph is fine at 1440px and covers a third of it at 390px, so on a
             phone the narration sits under the graph where it can be read without hiding it. */}
-        <aside className="pointer-events-none absolute inset-x-3 bottom-24 rounded-2xl border border-line bg-card/95 p-3 shadow-lg backdrop-blur sm:inset-x-auto sm:top-4 sm:right-4 sm:bottom-auto sm:w-96 sm:max-w-[calc(100%-2rem)] sm:p-4">
+        <aside className="pointer-events-none mx-3 mb-20 rounded-2xl border border-line bg-card/95 p-3 shadow-lg backdrop-blur sm:absolute sm:top-4 sm:right-4 sm:mx-0 sm:mb-0 sm:w-96 sm:max-w-[calc(100%-2rem)] sm:p-4">
           <p className="flex items-center gap-2 font-semibold">
             <span
               className={cn(
