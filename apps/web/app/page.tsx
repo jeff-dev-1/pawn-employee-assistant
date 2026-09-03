@@ -108,6 +108,14 @@ export default function Home() {
             onChange={setLang}
             options={LANGS.map((l) => ({ id: l.id as Lang, label: l.label }))}
           />
+          <button
+            type="button"
+            onClick={() => setReplay(true)}
+            title={t('replay.open')}
+            className="grid size-9 place-items-center rounded-xl border border-line text-muted transition hover:border-[var(--primary)] hover:text-[var(--primary)] sm:size-10"
+          >
+            <Route className="size-4" />
+          </button>
           {/* The gate lives in nginx, not in this app, so signing out is a plain link to the
               endpoint that clears the cookie - no state here to reset. Rendered only when
               the cookie exists, so localhost (no gate) does not show a dead control. */}
@@ -120,14 +128,6 @@ export default function Home() {
               <LogOut className="size-4" />
             </a>
           )}
-          <button
-            type="button"
-            onClick={() => setReplay(true)}
-            title={t('replay.open')}
-            className="grid size-9 place-items-center rounded-xl border border-line text-muted transition hover:border-[var(--primary)] hover:text-[var(--primary)] sm:size-10"
-          >
-            <Route className="size-4" />
-          </button>
         </span>
       </header>
 
