@@ -7,6 +7,7 @@ import {
   Languages,
   Monitor,
   Moon,
+  LogOut,
   Route,
   Sparkles,
   Sun,
@@ -31,6 +32,14 @@ export default function Home() {
   const [theme, setTheme] = useState<Theme>('system');
   const [replay, setReplay] = useState(false);
   const [agents, setAgents] = useState<string[]>([]);
+  const [signedIn, setSignedIn] = useState(false);
+
+  // pawn_gate, not pawn_session: the session cookie is HttpOnly and unreadable here by
+  // design. The flag carries no secret - it only says a gate exists - so the control
+  // appears on the gated deployment and stays hidden on a laptop.
+  useEffect(() => {
+    setSignedIn(document.cookie.includes('pawn_gate='));
+  }, []);
 
   // The replay draws the servers that actually registered, so a fourth one draws itself.
   useEffect(() => {
@@ -99,6 +108,18 @@ export default function Home() {
             onChange={setLang}
             options={LANGS.map((l) => ({ id: l.id as Lang, label: l.label }))}
           />
+          {/* The gate lives in nginx, not in this app, so signing out is a plain link to the
+              endpoint that clears the cookie - no state here to reset. Rendered only when
+              the cookie exists, so localhost (no gate) does not show a dead control. */}
+          {signedIn && (
+            <a
+              href="/logout"
+              title={t('auth.signOut')}
+              className="grid size-9 place-items-center rounded-xl border border-line text-muted transition hover:border-[var(--primary)] hover:text-[var(--primary)] sm:size-10"
+            >
+              <LogOut className="size-4" />
+            </a>
+          )}
           <button
             type="button"
             onClick={() => setReplay(true)}
