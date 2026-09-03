@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Pause, Play, RotateCcw, X } from 'lucide-rea
 import { useEffect, useMemo, useState } from 'react';
 import { MODES, type Mode } from '@/components/mode-switch';
 import { GraphProvider } from '@/components/workflow';
+import { useI18n } from '@/lib/i18n';
 import { buildScript, type Channel, type Routing } from '@/lib/workflow-script';
 import { cn } from '@/lib/utils';
 
@@ -32,6 +33,7 @@ export function WorkflowReplay({
   const [routing, setRouting] = useState<Routing>('single');
   const [at, setAt] = useState(0);
   const [playing, setPlaying] = useState(true);
+  const { t } = useI18n();
 
   // The same narrowing the script does, so the graph and the story never disagree.
   const effective: Routing = channel === 'portkey' ? routing : 'single';
@@ -71,11 +73,11 @@ export function WorkflowReplay({
   return (
     <div className="fixed inset-0 z-100 flex flex-col bg-bg">
       <header className="flex h-14 shrink-0 items-center justify-between border-b border-line px-4 sm:h-16 sm:px-5">
-        <h2 className="text-lg font-semibold tracking-tight sm:text-xl">Workflow replay</h2>
+        <h2 className="text-lg font-semibold tracking-tight sm:text-xl">{t('replay.title')}</h2>
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close"
+          aria-label={t('replay.close')}
           className="grid size-10 place-items-center rounded-xl border border-line transition hover:border-ink/30"
         >
           <X className="size-5" />
@@ -86,7 +88,10 @@ export function WorkflowReplay({
           control surface, and 128px of a 844px screen spent on them is the graph's budget. */}
       <div className="flex shrink-0 items-center gap-x-4 gap-y-2 overflow-x-auto border-b border-line px-4 py-2 sm:flex-wrap sm:gap-x-6 sm:px-5 sm:py-2.5">
         <Switch
-          options={MODES.map((m) => ({ id: m.id, label: m.label.replace(/ (usage|mode)$/, '') }))}
+          options={MODES.map((m) => ({
+            id: m.id,
+            label: t(`mode.${m.id}` as 'mode.normal').replace(/ (usage|mode)$/i, ''),
+          }))}
           value={mode}
           onChange={(v) => onMode(v as Mode)}
         />
