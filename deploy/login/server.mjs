@@ -74,21 +74,34 @@ display:grid;grid-template-columns:1fr}
 /* --- the photograph --- */
 .art{position:relative;overflow:hidden;background:#B1AEAF}
 .art img{width:100%;height:100%;object-fit:cover;display:block;
-/* 52%, not 45%: at 45% the soft horizontal cloud bands sat against the panel's empty white
-   and the eye drifted across into a wall. Dropping the crop puts the ridge line on the
-   boundary instead, which is something for the edge to land on. */
-object-position:50% 52%}
+/* 62% across, 52% down. Vertically: at 45% the soft cloud bands met the panel's edge and the
+   eye drifted into a wall; the ridge line is something for that edge to land on. Horizontally:
+   centred put the cliff against the boundary, and pushing right brings the water, the sails
+   and the gulls into the half of the frame the reader actually looks at. */
+object-position:62% 52%}
 .where{position:absolute;left:28px;bottom:22px;z-index:2;color:#fff;
 font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.55;
 text-shadow:0 1px 8px rgba(8,24,30,.5)}
 
 /* --- the form --- */
-.side{display:flex;align-items:center;justify-content:center;padding:32px}
+.side{position:relative;display:flex;align-items:center;justify-content:center;padding:32px}
+/* Theme and language before signing in, not after: a reader who cannot read the page has
+   no way to reach the switch that would fix it. */
+.tools{position:absolute;top:20px;right:20px;display:flex;gap:8px}
+.tools button{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;
+border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;
+transition:border-color .15s,color .15s}
+.tools button:hover{border-color:var(--green);color:var(--green)}
+.tools .menu{position:absolute;top:46px;right:0;display:grid;gap:2px;min-width:150px;padding:6px;
+border:1px solid var(--line);border-radius:12px;background:var(--panel);
+box-shadow:0 12px 30px -14px rgba(10,32,42,.4);z-index:5}
+.tools .menu button{width:100%;height:auto;justify-content:flex-start;padding:8px 10px;
+border:0;border-radius:8px;font-size:13.5px;color:var(--ink);text-align:left;display:flex;gap:8px}
+.tools .menu button:hover{background:var(--line);color:var(--ink)}
+.tools .menu button[aria-checked=true]{color:var(--green)}
 .form{width:100%;max-width:360px}
-.brand{display:flex;align-items:center;gap:10px;color:var(--green);margin-bottom:34px}
-.brand b{color:var(--ink);font-size:18px;font-weight:600;letter-spacing:-.01em}
-h1{margin:0 0 6px;font-size:23px;letter-spacing:-.015em}
-p.sub{margin:0 0 26px;color:var(--muted);font-size:14px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--green);margin-bottom:30px}
+.brand b{color:var(--ink);font-size:20px;font-weight:600;letter-spacing:-.015em}
 label{display:block;font-size:12px;color:var(--muted);margin-bottom:7px}
 input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:11px;font-size:15px;
 background:var(--field);color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s}
@@ -121,13 +134,17 @@ color:var(--red);font-size:13px}
 
 /* --- desktop: photo left, form right, 58/42 --- */
 @media (min-width:1024px){
-  body{grid-template-columns:minmax(0,58fr) minmax(420px,42fr)}
+  /* 1.618:1 - the split lands on the golden section rather than a round number. */
+  body{grid-template-columns:minmax(0,1.618fr) minmax(400px,1fr)}
   /* No hard rule between them. A 1px line made the boundary a seam; a soft inner shadow on
      the panel lets the photograph fade into it. */
   .side{box-shadow:inset 14px 0 26px -18px rgba(18,50,64,.28)}
 }
+/* Same three-state convention as the app: the media query decides when nothing is stamped,
+   an explicit choice wins in both directions. */
 @media (prefers-color-scheme:dark){
-:root{--panel:#151A1C;--ink:#E9EFF1;--muted:#93A3AA;--line:#2A3336;--field:#1B2225}}
+:root:not([data-theme=light]){--panel:#151A1C;--ink:#E9EFF1;--muted:#93A3AA;--line:#2A3336;--field:#1B2225}}
+:root[data-theme=dark]{--panel:#151A1C;--ink:#E9EFF1;--muted:#93A3AA;--line:#2A3336;--field:#1B2225}
 </style>
 </head>
 <body>
@@ -136,10 +153,9 @@ color:var(--red);font-size:13px}
   <div class="where">Dianchi Lake &middot; Kunming</div>
 </div>
 <main class="side">
+  <div class="tools" id="tools"></div>
   <div class="form">
-    <div class="brand">${MARK}<b>PAWN Assistant</b></div>
-    <h1>Employee Assistant</h1>
-    <p class="sub">Sign in to continue.</p>
+    <div class="brand">${MARK}<b>Employee Assistant</b></div>
     <form method="post" action="/login">
       <input type="hidden" name="rd" value="${esc(rd)}">
       <label for="p">Access code</label>
@@ -149,6 +165,75 @@ color:var(--red);font-size:13px}
     </form>
   </div>
 </main>
+<script>
+(() => {
+  // The page is served as one file with no framework, so the switches are twenty lines of
+  // DOM rather than a component. They write the same localStorage keys the app reads, so a
+  // choice made here survives into the session it opens.
+  const T = [['system','\u8DDF\u96A8\u7CFB\u7D71','System'],['light','\u6DFA\u8272','Light'],['dark','\u6DF1\u8272','Dark']];
+  const L = [['en','English'],['zh-Hant','\u7E41\u9AD4\u4E2D\u6587']];
+  // The app's own icons, inlined. Emoji rendered as flat glyphs beside a line-drawn
+  // interface and read as a different product.
+  const svg = (d) => '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" ' +
+    'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+    d + '</svg>';
+  const ICON = {
+    system: svg('<rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>'),
+    light: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/>' +
+      '<path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/>' +
+      '<path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>'),
+    dark: svg('<path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/>'),
+    lang: svg('<path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/>' +
+      '<path d="m22 22-5-10-5 10"/><path d="M14 18h6"/>'),
+  };
+  let theme = localStorage.getItem('pawn-theme') || 'system';
+  let lang = localStorage.getItem('pawn-lang') || 'en';
+  const zh = () => lang === 'zh-Hant';
+  const root = document.documentElement;
+
+  const apply = () => {
+    root.dataset.theme = theme;
+    root.lang = lang;
+    localStorage.setItem('pawn-theme', theme);
+    localStorage.setItem('pawn-lang', lang);
+    document.querySelector('label[for=p]').textContent = zh() ? '\u5B58\u53D6\u78BC' : 'Access code';
+    document.querySelector('button[type=submit]').textContent = zh() ? '\u9032\u5165' : 'Enter';
+    render();
+  };
+
+  const tools = document.getElementById('tools');
+  let open = null;
+  function render() {
+    tools.innerHTML = '';
+    const add = (icon, title, items, cur, pick) => {
+      const wrap = document.createElement('span');
+      wrap.style.position = 'relative';
+      const b = document.createElement('button');
+      b.type = 'button'; b.title = title; b.innerHTML = icon;
+      b.onclick = (e) => { e.stopPropagation(); open = open === title ? null : title; render(); };
+      wrap.appendChild(b);
+      if (open === title) {
+        const m = document.createElement('span');
+        m.className = 'menu';
+        items.forEach(([id, label]) => {
+          const i = document.createElement('button');
+          i.type = 'button'; i.textContent = label;
+          i.setAttribute('aria-checked', String(id === cur));
+          i.onclick = (e) => { e.stopPropagation(); pick(id); open = null; apply(); };
+          m.appendChild(i);
+        });
+        wrap.appendChild(m);
+      }
+      tools.appendChild(wrap);
+    };
+    add(ICON[theme], zh() ? '\u4E3B\u984C' : 'Theme',
+        T.map(([id, z, e]) => [id, zh() ? z : e]), theme, (v) => { theme = v; });
+    add(ICON.lang, zh() ? '\u8A9E\u8A00' : 'Language', L, lang, (v) => { lang = v; });
+  }
+  document.addEventListener('click', () => { if (open) { open = null; render(); } });
+  apply();
+})();
+</script>
 </body>
 </html>`;
 }
@@ -194,8 +279,8 @@ createServer((req, res) => {
     });
     return req.on('end', () => {
       const f = new URLSearchParams(body);
-      // Relative paths only, or the sign-in page becomes an open redirect: the link shows
-      // your domain and lands somewhere else.
+      // Relative paths only, or the sign-in page becomes an open redirect: the link
+      // shows your domain and lands somewhere else.
       const raw = f.get('rd') || '/';
       const rd = raw.startsWith('/') && !raw.startsWith('//') ? raw : '/';
       if (!same(f.get('password') ?? '', PASSWORD)) {
