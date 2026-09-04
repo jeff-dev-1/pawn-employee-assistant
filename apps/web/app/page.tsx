@@ -70,7 +70,8 @@ export default function Home() {
     // data-mode retints --primary for everything below it, so the posture is one attribute.
     // bg-bg on the outermost element as well as on body: everything between the scrolling
     // transcript and body is transparent, so any pixel this tree does not cover shows the
-    // canvas behind the page - a white strip in dark mode, invisible in light.
+    // canvas behind the page - which in dark mode is a white strip, and in light mode is
+    // invisible, which is why it took three looks to find.
     <div data-mode={mode} className="flex h-dvh flex-col bg-bg">
       {/* On a phone the three header blocks want 562px of a 390px viewport. The wordmark and
           the theme switch are the two that carry no information the room needs mid-demo, so
